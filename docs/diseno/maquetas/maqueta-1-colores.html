@@ -1,0 +1,227 @@
+<title>Inmersión Ceto</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Maqueta de color: el fondo es una función de la profundidad (scroll). Una sola ruptura dura: la línea de agua. */
+:root {
+  --foam: #F2F6F7;      /* superficie / papel */
+  --ink: #04070B;       /* casi negro */
+  --navy: #0A1C2B;      /* azul marino profundo */
+  --cyan: #38D6E8;      /* acento de marca */
+  --biolum: #5CFFC4;    /* solo en el abismo */
+  --bg: var(--foam);
+  --fg: var(--ink);
+  --display: "Space Grotesk", "Arial Narrow", system-ui, sans-serif;
+  --body: "Inter", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { background: var(--ink); }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 16px; line-height: 1.55; transition: color .4s ease; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+canvas#sea { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+.rays { position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0;
+  background:
+    linear-gradient(100deg, transparent 20%, rgba(56,214,232,.10) 24%, transparent 30%),
+    linear-gradient(80deg, transparent 45%, rgba(56,214,232,.08) 50%, transparent 56%),
+    linear-gradient(95deg, transparent 65%, rgba(56,214,232,.07) 69%, transparent 75%);
+  mask-image: linear-gradient(to bottom, #000 0%, transparent 75%); -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 75%); }
+main { position: relative; z-index: 1; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
+section { min-height: 92vh; display: flex; align-items: center; padding-block: 10vh; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; opacity: .7; }
+h1, h2 { font-family: var(--display); font-weight: 700; letter-spacing: -.03em; line-height: .98; margin: 12px 0 20px; text-wrap: balance; }
+h1 { font-size: clamp(44px, 9vw, 120px); }
+h2 { font-size: clamp(32px, 5.4vw, 72px); max-width: 16ch; }
+p { max-width: 58ch; margin: 0; opacity: .85; }
+.hero { min-height: 100vh; align-items: flex-end; padding-bottom: 22vh; }
+.waterline { position: absolute; left: 0; right: 0; bottom: 0; height: 22vh; pointer-events: none; }
+.waterline svg { width: 100%; height: 100%; display: block; }
+.note { margin-top: 28px; font-family: var(--mono); font-size: 13px; padding: 12px 14px; border: 1px dashed currentColor; border-radius: 8px; max-width: 60ch; opacity: .8; }
+.swatches { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+.sw { display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 12px; }
+.sw i { width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(255,255,255,.3); }
+/* tarjeta de vidrio y ticket de papel para ver el contraste */
+.row { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; margin-top: 36px; width: 100%; }
+.glass { border-radius: 18px; padding: 22px; background: rgba(160,220,240,.08); border: 1px solid rgba(160,220,240,.22); backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%); min-width: 0; }
+.glass .shot { aspect-ratio: 16/10; border-radius: 10px; background: linear-gradient(135deg, #0f3448, #0a1c2b 60%, #061019); margin-bottom: 14px; display: grid; place-items: center; font-family: var(--mono); font-size: 12px; color: rgba(242,246,247,.55); }
+.ticket { background: var(--foam); color: var(--ink); padding: 20px 22px 26px; font-family: var(--mono); font-size: 12.5px; min-width: 0;
+  -webkit-mask: radial-gradient(circle 7px at 50% 0, transparent 98%, #000) 0 0 / 18px 100% repeat-x, linear-gradient(#000,#000);
+  -webkit-mask-composite: source-in; mask: radial-gradient(circle 7px at 50% 0, transparent 98%, #000) 0 0 / 18px 100% repeat-x;
+  border-radius: 4px; }
+.ticket h3 { font-family: var(--display); font-size: 22px; letter-spacing: .02em; margin: 6px 0 2px; }
+.ticket .dash { border-top: 1px dashed rgba(4,7,11,.4); margin: 10px 0; }
+.ticket .ln { display: flex; justify-content: space-between; gap: 12px; }
+.ticket .cta { margin-top: 14px; background: var(--ink); color: var(--foam); text-align: center; padding: 10px; border-radius: 4px; }
+/* medidor de profundidad */
+.meter { position: fixed; right: max(14px, env(safe-area-inset-right, 0px)); top: 50%; transform: translateY(-50%); z-index: 5; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; font-family: var(--mono); mix-blend-mode: difference; color: #fff; pointer-events: none; }
+.meter .m { font-size: 22px; font-variant-numeric: tabular-nums; }
+.meter .z { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; opacity: .75; }
+.meter .bar { width: 2px; height: 120px; background: rgba(255,255,255,.25); position: relative; margin-top: 6px; }
+.meter .bar b { position: absolute; left: -3px; width: 8px; height: 8px; border-radius: 50%; background: #fff; top: 0; }
+.abyss h2 .glow { color: var(--biolum); text-shadow: 0 0 24px rgba(92,255,196,.55); }
+footer { padding-block: 16vh 10vh; }
+footer .word { font-family: var(--display); font-weight: 700; font-size: clamp(64px, 17vw, 240px); letter-spacing: -.05em; line-height: .85; color: rgba(242,246,247,.92); }
+@media (max-width: 640px) { .meter .bar { display: none; } .meter .m { font-size: 16px; } }
+@media (prefers-reduced-motion: reduce) { body { transition: none; } }
+</style>
+
+<canvas id="sea" aria-hidden="true"></canvas>
+<div class="rays" id="rays" aria-hidden="true"></div>
+<div class="meter" aria-hidden="true"><span class="m" id="m">0 m</span><span class="z" id="z">Superficie</span><span class="bar"><b id="dot"></b></span></div>
+
+<main>
+  <section class="hero" data-depth="0" style="position:relative">
+    <div class="wrap">
+      <div class="eyebrow">Ceto Studio · maqueta de color</div>
+      <h1>Lo grande pasa bajo el agua.</h1>
+      <p>Arriba del agua, todo es claro: blanco espuma y texto casi negro. Es la única pantalla clara de la página. Bajá para romper la superficie.</p>
+    </div>
+    <div class="waterline" aria-hidden="true">
+      <svg viewBox="0 0 1440 200" preserveAspectRatio="none"><path id="wave" fill="#0E3448" d=""></path></svg>
+    </div>
+  </section>
+
+  <section data-depth="10">
+    <div class="wrap">
+      <div class="eyebrow">Zona de luz · 10–200 m</div>
+      <h2>Invertiste en anuncios. Llegaron visitas. No vendiste nada.</h2>
+      <p>Apenas cruzás la superficie, el fondo pasa a azul petróleo y entra luz cian desde arriba. Desde acá el texto queda claro sobre oscuro hasta el final.</p>
+      <div class="swatches">
+        <span class="sw"><i style="background:#F2F6F7"></i>Espuma</span>
+        <span class="sw"><i style="background:#0E3448"></i>Superficie bajo el agua</span>
+        <span class="sw"><i style="background:#0A1C2B"></i>Azul marino</span>
+        <span class="sw"><i style="background:#04070B"></i>Casi negro</span>
+        <span class="sw"><i style="background:#38D6E8"></i>Cian</span>
+        <span class="sw"><i style="background:#5CFFC4"></i>Bioluminiscencia</span>
+      </div>
+    </div>
+  </section>
+
+  <section data-depth="200">
+    <div class="wrap">
+      <div class="eyebrow">Zona de luz · casos</div>
+      <h2>El blanco vuelve como objeto, no como fondo.</h2>
+      <p>Tarjetas de vidrio para el portfolio y tickets de papel para los paquetes. El contraste fuerte que tiene Two Halves aparece en estas piezas que "flotan" en el agua.</p>
+      <div class="row">
+        <div class="glass"><div class="shot">captura del sitio</div><div class="eyebrow">Ecoturismo</div><p style="margin-top:6px">26 consultas en dos meses y medio.</p></div>
+        <div class="ticket" role="img" aria-label="Ejemplo de ticket de inmersión">
+          CETO STUDIO · PASE DE INMERSIÓN
+          <h3>[PAQUETE]</h3>
+          <div class="dash"></div>
+          <div class="ln"><span>Inmersión n.º</span><span>02</span></div>
+          <div class="ln"><span>Profundidad máx.</span><span>200 m</span></div>
+          <div class="ln"><span>Tripulación</span><span>Quimi &amp; Cori</span></div>
+          <div class="dash"></div>
+          <div class="ln"><span>- Web completa</span><span>INCL.</span></div>
+          <div class="ln"><span>- Formulario conectado</span><span>INCL.</span></div>
+          <div class="cta">Pedir cotización →</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-depth="600">
+    <div class="wrap">
+      <div class="eyebrow">Zona crepuscular · 200–1.000 m</div>
+      <h2>Tus consultas se enfrían entre el WhatsApp y la planilla.</h2>
+      <p>La luz de arriba ya se fue. El fondo es azul marino casi negro y aparece la "nieve marina": partículas que caen lento.</p>
+    </div>
+  </section>
+
+  <section class="abyss" data-depth="1500">
+    <div class="wrap">
+      <div class="eyebrow">Abismo · más de 1.000 m</div>
+      <h2>Acá la única luz <span class="glow">la hacemos nosotros.</span></h2>
+      <p>Negro casi absoluto. El cuarto color, la bioluminiscencia, aparece solo acá: puntos que se encienden y el botón de contacto.</p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <div class="eyebrow" style="margin-bottom:18px">Fondo del mar · 4.000 m</div>
+      <div class="word">Ceto Studio</div>
+    </div>
+  </footer>
+</main>
+
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // paradas de color por profundidad (m)
+  const stops = [
+    { d: 0,    c: [242,246,247], fg: [4,7,11] },
+    { d: 0.4,  c: [14,52,72],    fg: [242,246,247] },
+    { d: 30,   c: [14,52,72],    fg: [242,246,247] },
+    { d: 200,  c: [10,28,43],    fg: [242,246,247] },
+    { d: 1000, c: [6,13,20],     fg: [242,246,247] },
+    { d: 4000, c: [3,5,8],       fg: [242,246,247] }
+  ];
+  const lerp = (a,b,t) => a + (b-a)*t;
+  const mix = (a,b,t) => a.map((v,i) => Math.round(lerp(v,b[i],t)));
+  function colorAt(d) {
+    for (let i = 0; i < stops.length-1; i++) {
+      const a = stops[i], b = stops[i+1];
+      if (d <= b.d) { const t = Math.max(0,(d-a.d)/(b.d-a.d)); return { bg: mix(a.c,b.c,t), fg: t>.5||a.d>0 ? b.fg : a.fg }; }
+    }
+    return { bg: stops.at(-1).c, fg: stops.at(-1).fg };
+  }
+  // profundidad según scroll: interpolación entre secciones marcadas
+  const marks = [...document.querySelectorAll('[data-depth]')];
+  const footer = document.querySelector('footer');
+  function depthNow() {
+    const y = scrollY + innerHeight*0.5;
+    const pts = marks.map(s => ({ y: s.offsetTop + s.offsetHeight*0.5, d: +s.dataset.depth }));
+    pts.push({ y: footer.offsetTop + footer.offsetHeight*0.5, d: 4000 });
+    // superficie: se rompe cuando la línea de agua pasa la mitad de la pantalla
+    const hero = marks[0]; const surfaceY = hero.offsetTop + hero.offsetHeight;
+    if (y < surfaceY) return 0;
+    pts[0] = { y: surfaceY, d: 0 };
+    for (let i = 0; i < pts.length-1; i++) if (y <= pts[i+1].y) return lerp(pts[i].d, pts[i+1].d, (y-pts[i].y)/(pts[i+1].y-pts[i].y));
+    return 4000;
+  }
+  const root = document.documentElement.style, mEl = document.getElementById('m'), zEl = document.getElementById('z'), dot = document.getElementById('dot'), rays = document.getElementById('rays');
+  const zone = d => d <= 0.5 ? 'Superficie' : d < 200 ? 'Zona de luz' : d < 1000 ? 'Zona crepuscular' : d < 3900 ? 'Abismo' : 'Fondo del mar';
+  let depth = 0;
+  function update() {
+    depth = depthNow();
+    const { bg, fg } = colorAt(depth);
+    root.setProperty('--bg', `rgb(${bg})`); root.setProperty('--fg', `rgb(${fg})`);
+    mEl.textContent = Math.round(depth).toLocaleString('es') + ' m';
+    zEl.textContent = zone(depth);
+    dot.style.top = (Math.min(depth,4000)/4000*112) + 'px';
+    rays.style.opacity = depth <= 0 ? 0 : Math.max(0, 1 - depth/260).toFixed(3);
+  }
+  addEventListener('scroll', update, { passive: true }); addEventListener('resize', update); update();
+
+  // línea de agua animada
+  const wave = document.getElementById('wave'); let t0 = 0;
+  function drawWave(t) {
+    let d = 'M0 200 L0 ';
+    const pts = [];
+    for (let x = 0; x <= 1440; x += 40) pts.push([x, 90 + Math.sin(x/140 + t/900)*14 + Math.sin(x/53 + t/600)*6]);
+    d += pts[0][1]; pts.forEach(p => d += ` L${p[0]} ${p[1].toFixed(1)}`); d += ' L1440 200 Z';
+    wave.setAttribute('d', d);
+  }
+  // partículas: rayos de luz arriba, nieve marina en el medio, bioluminiscencia abajo
+  const cv = document.getElementById('sea'), cx = cv.getContext('2d'); let W, H, dpr;
+  function size() { dpr = Math.min(2, devicePixelRatio||1); W = cv.width = innerWidth*dpr; H = cv.height = innerHeight*dpr; }
+  size(); addEventListener('resize', size);
+  const snow = Array.from({length: 90}, () => ({ x: Math.random(), y: Math.random(), r: Math.random()*1.6+.4, v: Math.random()*.00025+.00008 }));
+  const glow = Array.from({length: 34}, () => ({ x: Math.random(), y: Math.random(), r: Math.random()*2.2+1, p: Math.random()*6.28, s: Math.random()*.8+.4 }));
+  function frame(t) {
+    drawWave(t);
+    cx.clearRect(0,0,W,H);
+    const snowA = depth < 150 ? 0 : Math.min(1, (depth-150)/300) * (depth > 2500 ? Math.max(0, 1-(depth-2500)/1000) : 1);
+    if (snowA > 0) { cx.fillStyle = `rgba(200,225,235,${.45*snowA})`;
+      snow.forEach(p => { p.y += p.v * (reduce?0:1) * 16; if (p.y > 1) p.y = 0; cx.beginPath(); cx.arc(p.x*W, p.y*H, p.r*dpr, 0, 6.28); cx.fill(); }); }
+    const glowA = depth < 900 ? 0 : Math.min(1, (depth-900)/500);
+    if (glowA > 0) glow.forEach(g => { const a = glowA * (.35 + .65*Math.max(0, Math.sin(t/1000*g.s + g.p))); const x = g.x*W, y = g.y*H, r = g.r*dpr;
+      const gr = cx.createRadialGradient(x,y,0,x,y,r*7); gr.addColorStop(0, `rgba(92,255,196,${a})`); gr.addColorStop(1,'rgba(92,255,196,0)');
+      cx.fillStyle = gr; cx.beginPath(); cx.arc(x,y,r*7,0,6.28); cx.fill(); });
+    if (!reduce) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
