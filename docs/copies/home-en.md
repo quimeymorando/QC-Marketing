@@ -1,4 +1,4 @@
-# Ceto home: English copy (v2)
+# Ceto Studio home: English copy (v2)
 
 This is an adaptation of [home-es.md](home-es.md), not a word-for-word translation. Same structure and the same audience: service businesses and independent professionals.
 
@@ -20,7 +20,7 @@ This is an adaptation of [home-es.md](home-es.md), not a word-for-word translati
 | D | **Everything you see starts with what you don't.** |
 
 **Subhead**
-> We're Ceto. We build websites, systems and AI for service businesses and independent professionals.
+> We're Ceto Studio. We build websites, systems and AI for service businesses and independent professionals.
 
 **Button:** `Dive in with us ↓`
 
@@ -119,7 +119,7 @@ Each ticket shows: `CETO · DIVE PASS` · package name · who it's for · Dive n
 - **Secondary:** `I'd rather fill out a form`
 
 ## 9. Footer
-- **Giant wordmark:** `Ceto`
+- **Giant wordmark:** `Ceto Studio`
 - **Line:** `Websites, systems and AI for businesses with depth.`
 - **Columns:** Portfolio · Services · AI · About · Contact
 

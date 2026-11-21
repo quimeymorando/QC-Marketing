@@ -158,8 +158,9 @@ El nombre gigante, a 15.6vw, se escribe letra por letra. Muestra un reloj con la
 - **Sin cubos 3D.**
 - **Construcción:** Opus para análisis y marca; Fable para construir la web.
 - **Hosting:** Cloudflare (Workers con assets estáticos). **Framework propuesto:** Astro (de Cloudflare desde enero 2026) + GSAP + Lenis + three.js/WebGL; formulario por un endpoint en el Worker que manda a GHL. Pendiente de confirmación.
-- **Nombre:** Ceto (diosa griega de las ballenas y criaturas de las profundidades).
+- **Nombre:** Ceto Studio, dominio sugerido cetostudio.com (diosa griega de las ballenas y criaturas de las profundidades).
 - **Idiomas:** español neutro latinoamericano + inglés. Público de la home: negocios de servicios y profesionales; agencias en página aparte.
-- **Paquetes:** formato ticket ("pase de inmersión"), nombres y precios a definir.
+- **Paquetes:** tickets de buceo o excursión ("pase de inmersión"), nombres y precios a definir.
+- **Portfolio:** estética de las tarjetas de vidrio apiladas de Two Halves; la sección se construye con contenido de ejemplo y después se conectan sus webs.
 - **Portfolio:** sus webs publicadas.
 - **Pendiente:** tipografías, nombres/precios de paquetes, título del hero.

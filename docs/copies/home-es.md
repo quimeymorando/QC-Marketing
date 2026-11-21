@@ -1,4 +1,4 @@
-# Home Ceto: textos en español (v2)
+# Home Ceto Studio: textos en español (v2)
 
 Escrito en español neutro latinoamericano, con tuteo y sin regionalismos. La versión en inglés está en [home-en.md](home-en.md).
 
@@ -26,7 +26,7 @@ Escrito en español neutro latinoamericano, con tuteo y sin regionalismos. La ve
 | D | **Todo lo que se ve empieza en lo que no se ve.** |
 
 **Bajada**
-> Somos Ceto. Hacemos webs, sistemas e inteligencia artificial para negocios de servicios y profesionales.
+> Somos Ceto Studio. Hacemos webs, sistemas e inteligencia artificial para negocios de servicios y profesionales.
 
 **Botón:** `Baja con nosotros ↓`
 
@@ -149,7 +149,7 @@ Nivel de profundidad sugerido para cada uno:
 - **Botón secundario:** `Prefiero completar un formulario`
 
 ## 9. Footer
-- **Wordmark gigante:** `Ceto`
+- **Wordmark gigante:** `Ceto Studio`
 - **Línea:** `Webs, sistemas e inteligencia artificial para negocios con fondo.`
 - **Reloj:** hora local del estudio
 - **Columnas:** Portfolio · Servicios · IA · Nosotros · Contacto
