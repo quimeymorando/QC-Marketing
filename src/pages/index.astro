@@ -1,0 +1,242 @@
+---
+import Base from '../layouts/Base.astro';
+import Logo from '../components/Logo.astro';
+import Mock from '../components/Mock.astro';
+import { zones, objections, work, passes, team } from '../data/home';
+import fs from 'node:fs';
+import path from 'node:path';
+// Material real (dominio público): láminas históricas en trama de 1 bit, video y ecograma de NOAA.
+const mdir = path.join(process.cwd(), 'public', 'media');
+const media = (f: string) => fs.existsSync(path.join(mdir, f));
+const plates: any[] = media('plates.json') ? JSON.parse(fs.readFileSync(path.join(mdir, 'plates.json'), 'utf8')) : [];
+const plate = (n: number) => plates.find((p) => p.file === `plate-${n}.png`);
+const cap = (p: any) => `${p.nombreComun ? p.nombreComun[0].toUpperCase() + p.nombreComun.slice(1) + ' · ' : ''}${p.autor.split(' (')[0].replace('Albert C. L. G. ', 'A. ').replace('Ernst ', 'E. ')}, ${p.anio} · ${p.expedicion ? 'HMS Challenger' : 'Kunstformen der Natur'}, ${p.lamina.split(',')[0].split(' (')[0].replace('Pl.', 'lám.').replace('Tafel', 'lám.')}`;
+const zoneMedia: Record<string, { plates?: number[]; clip?: string }> = { luz: { plates: [6, 5] }, crepuscular: { clip: 'clip-1' }, abismo: { plates: [1] } };
+---
+<Base page="home" depth={0}>
+  <main>
+    <!-- 1. Superficie -->
+    <section class="hero" id="superficie-0" data-depth="0">
+      <div class="wrap">
+        <h1 class="hero-title display" data-gl data-tw data-tw-step="58" data-tw-caret="stay" data-tw-name="hero">Lo grande pasa<br /><span class="t2">bajo el agua.</span></h1>
+        <p class="hero-sub" data-gl data-tw data-tw-after="hero">Somos Ceto Studio. Hacemos webs, sistemas e inteligencia artificial para negocios de servicios y profesionales.</p>
+        <p class="hero-cta"><a class="btn" href="#manifiesto" data-magnetic>Baja con nosotros <i>↓</i></a></p>
+      </div>
+      <p class="hero-meta a" data-tw data-tw-after="hero">Ceto Studio — webs, sistemas e inteligencia artificial</p>
+      <p class="hero-meta b" data-tw data-tw-after="hero">Nivel del mar · 0 m<br />Desliza para sumergirte</p>
+      <canvas id="waterline" aria-hidden="true"></canvas>
+    </section>
+
+    <!-- 2. Manifiesto -->
+    <section class="sec manifesto" id="manifiesto" data-depth="3">
+      <div class="wrap">
+        <p class="label" data-tw>El estudio</p>
+        <div class="manifesto-text" data-tw-scrub>
+          <p>Si llegaste hasta aquí, tu negocio ya funciona. Tienes clientes y algo bueno para ofrecer.</p>
+          <p>El problema es que <span class="t2">todo pasa por ti.</span> Responder cada mensaje, perseguir cada pago, acordarte de cada seguimiento. Y el día que no llegas, algo se pierde.</p>
+          <p>Nosotros construimos lo que va por debajo, para que el negocio siga andando aunque no estés mirando el celular.</p>
+        </div>
+        <p class="manifesto-meta mono">
+          <span data-tw>Webs y apps</span><span data-tw>Automatizaciones</span><span data-tw>Inteligencia artificial</span><span data-tw>Anuncios en Meta</span>
+        </p>
+      </div>
+    </section>
+
+    <!-- 3. Zonas -->
+    {zones.map((z, i) => (
+      <>
+        {z.id === 'abismo' && (
+          media('echogram.webp') && <section class="sec echo" id="ecograma" data-depth="1000">
+            <div class="wrap">
+              <div class="echo-strip" style="--src:url(/media/echogram.webp)" role="img" aria-label="Ecograma de sonar: una banda horizontal más clara muestra la capa de plancton y peces entre 300 y 800 metros"></div>
+              <p class="echo-cap"><span data-tw>Ecograma real · así se ve la vida en un sonar: la capa de dispersión profunda, entre 300 y 800 m</span><span data-tw>NOAA Ocean Exploration · Okeanos Explorer, 2019</span></p>
+            </div>
+          </section>
+        )}
+        <section class={`zone zone-${z.id}`} id={z.id} data-depth={z.depth}>
+          <div class="wrap zone-grid">
+            <div class="zone-copy">
+              <p class="label" data-tw>{z.label}</p>
+              <h2 class="zone-pain display" data-tw data-tw-step="30" data-tw-caret="end" data-tw-name={`z${i}`}>{z.pain[0]} <span class="t2">{z.pain[1]}</span></h2>
+              <div class="zone-body">
+                {z.body.map((p) => <p data-tw data-tw-after={`z${i}`}>{p}</p>)}
+              </div>
+              <p class="zone-svc" data-tw data-tw-after={`z${i}`}>{z.service}</p>
+            </div>
+            <div class="zone-media">
+              {zoneMedia[z.id]?.plates && (
+                <div class={`plates ${zoneMedia[z.id].plates!.length === 1 ? 'one' : ''}`}>
+                  {zoneMedia[z.id].plates!.map(plate).filter(Boolean).map((p: any) => (
+                    <figure class="plate">
+                      <div class="plate-box" style={`width:${p.width}px;aspect-ratio:${p.width}/${p.height};--src:url(/media/${p.file})`}>
+                        <div class="plate-img"></div><div class="plate-img lit"></div>
+                      </div>
+                      <figcaption><i>{p.nombre}</i>{cap(p)}</figcaption>
+                    </figure>
+                  ))}
+                </div>
+              )}
+              {zoneMedia[z.id]?.clip && media(`${zoneMedia[z.id].clip}.mp4`) && (
+                <figure class="obs">
+                  <div class="obs-view"><video data-auto muted loop playsinline preload="none" poster={`/media/${zoneMedia[z.id].clip}.jpg`} src={`/media/${zoneMedia[z.id].clip}.mp4`}></video></div>
+                  <figcaption class="obs-cap"><b>Registro real · sifonóforo a unos 800 m · Hawái, 2017</b><span>NOAA Ocean Exploration</span></figcaption>
+                </figure>
+              )}
+            </div>
+          </div>
+        </section>
+      </>
+    ))}
+
+    <!-- 4. Antes de seguir bajando -->
+    <section class="sec rows" id="dudas" data-depth="2000">
+      <div class="wrap">
+        <div class="rows-head">
+          <div>
+            <p class="label" data-tw>Antes de seguir bajando</p>
+            <h2 class="rows-title display" data-tw data-tw-step="34" data-tw-name="rows">Lo que ya <span class="t2">te pasó.</span></h2>
+          </div>
+          <p class="rows-intro" data-tw data-tw-after="rows">Si ya trabajaste con una agencia, es probable que alguna de estas te suene. Así lo hacemos nosotros.</p>
+        </div>
+        <ol>
+          {objections.map((o, i) => (
+            <li class="row">
+              <span class="row-n" data-tw data-tw-name={`o${i}n`}>{String(i + 1).padStart(2, '0')}</span>
+              <h3 class="row-q" data-tw data-tw-step="16" data-tw-caret="end" data-tw-after={`o${i}n`} data-tw-name={`o${i}`}>{o.q}</h3>
+              <p class="row-a" data-tw data-tw-after={`o${i}`}>{o.a}</p>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+
+    <!-- 5. Portfolio -->
+    <section class="wk" id="portfolio" data-depth="2600">
+      <div class="wk-stage">
+        <h2 class="wk-title display" aria-label="Algunos que ya bajaron."><span data-tw data-tw-step="46" data-tw-name="wk1">Algunos que</span><span class="wk-gap"></span><span class="t2" data-tw data-tw-step="46" data-tw-after="wk1" data-tw-caret="end">ya bajaron.</span></h2>
+        <div class="wk-thumb" aria-hidden="true">{work.map((w, i) => <div class="wk-thumb-i" hidden={i > 0}><Mock i={i} hue={w.hue} small /></div>)}</div>
+        <ul class="wk-deck">
+          {work.map((w, i) => (
+            <li class="wk-card" style={`--i:${i}`} data-slug={w.slug}>
+              <a class="wk-glass" href="/portfolio" data-cursor="Ver caso">
+                <span class="wk-shot"><Mock i={i} hue={w.hue} /></span>
+                <span class="wk-info">
+                  <span class="wk-meta"><b>{w.state}</b><span>{w.kind}</span><span>{w.svc}</span></span>
+                  <span class="wk-n">{w.n}</span>
+                  <span class="wk-name">{w.name}</span>
+                  <span class="wk-arrow">↗</span>
+                </span>
+                <span class="wk-dim"></span>
+              </a>
+            </li>
+          ))}
+        </ul>
+        <div class="wrap wk-foot"><span class="mono">Negocios reales. Lo que les pasaba y lo que cambió.</span></div>
+      </div>
+      <div class="wrap wk-more">
+        <p data-tw>Estos son casos de ejemplo. Los trabajos completos van en el portfolio.</p>
+        <a class="btn" href="/portfolio" data-magnetic>Ver todo el portfolio <i>→</i></a>
+      </div>
+    </section>
+
+    <!-- 6. Pases de inmersión -->
+    <section class="sec pk" id="pases" data-depth="3000">
+      <div class="wrap">
+        <div class="pk-head">
+          <div>
+            <p class="label" data-tw>Pases de inmersión</p>
+            <h2 class="rows-title display" data-tw data-tw-step="34" data-tw-name="pk">Elige tu <span class="t2">inmersión.</span></h2>
+          </div>
+          <p class="rows-intro" data-tw data-tw-after="pk">Sin lista de precios cerrada. Eliges el punto de partida y te enviamos alcance y precio fijo.</p>
+        </div>
+        <div class="pk-grid">
+          {passes.map((p, i) => (
+            <article class="pass" style={`--rot:${[-0.8, 0.5, -0.4, 0.9][i]}deg`}>
+              <div class="pass-top">
+                <Logo />
+                <div>Ceto Studio · pase de inmersión</div>
+                <h3 class="pass-name">{p.name}</h3>
+                <p class="pass-line">{p.line}</p>
+              </div>
+              <hr />
+              <div class="pass-ln"><span>Inmersión n.º</span><span>{p.n}</span></div>
+              <div class="pass-ln"><span>Profundidad máx.</span><span>{p.depth}</span></div>
+              <div class="pass-ln"><span>Tripulación</span><span>Quimi &amp; Cori</span></div>
+              <div class="pass-ln"><span>Fecha</span><span data-live="date">--/--/----</span></div>
+              <div class="pass-ln"><span>Hora local</span><span data-live="time">--:--</span></div>
+              <hr />
+              {p.items.map((it) => <div class="pass-ln"><span>- {it}</span><span>Incl.</span></div>)}
+              <hr />
+              <div class="pass-ln pass-total"><span>Total</span><span>Precio fijo a pedido</span></div>
+              <div class="pass-ln"><span>Nota del capitán</span><span>{p.note}</span></div>
+              <a class="pass-cta" href="#contacto" data-cursor="Pedir cotización">Pedir cotización →</a>
+              <div class="pass-bar" aria-hidden="true"></div>
+              <div class="pass-code">*{p.code}*</div>
+            </article>
+          ))}
+        </div>
+        <p class="pk-note"><span data-tw><b>Elijas el que elijas,</b> se ve bien en el celular, carga rápido y es tuyo.</span><span data-tw>¿Ya está andando? También lo mantenemos mes a mes.</span></p>
+      </div>
+    </section>
+
+    <!-- 7. Equipo -->
+    <section class="sec team" id="equipo" data-depth="3400">
+      <div class="wrap">
+        <p class="label" data-tw>Tripulación</p>
+        <h2 class="team-title display" data-tw data-tw-step="34" data-tw-name="team">Dos personas. <span class="t2">Las mismas de principio a fin.</span></h2>
+        <div class="team-grid">
+          {team.map((m, i) => (
+            <article class="member">
+              <h3 class="member-name display" data-tw data-tw-step="90" data-tw-after={i === 0 ? 'team' : 'm0'} data-tw-name={`m${i}`}>{m.name[0]}</h3>
+              <p class="member-role mono" data-tw data-tw-after={`m${i}`}>{m.role}</p>
+              <p class="member-bio" data-tw data-tw-after={`m${i}`}>{m.bio}</p>
+            </article>
+          ))}
+        </div>
+        <p class="team-foot"><a class="btn" href="/nosotros" data-magnetic>Conoce a los personajes <i>→</i></a></p>
+      </div>
+    </section>
+
+    <!-- 8. Cierre -->
+    <section class="cta" id="contacto" data-depth="3800">
+      <div class="wrap">
+        <p class="label" data-tw>Señal de sonar</p>
+        <h2 class="cta-title display" data-tw data-tw-step="40" data-tw-caret="stay" data-tw-name="cta">Cuéntanos qué está pasando <span class="t2">en tu negocio.</span></h2>
+        <p class="cta-text" data-tw data-tw-after="cta">Te respondemos nosotros, no un formulario automático. Sin compromiso.</p>
+        <p class="cta-actions">
+          <a class="btn solid" href="#contacto" data-contact="whatsapp" data-magnetic data-cursor="Enviar señal">Escríbenos por WhatsApp <i>◉</i></a>
+          <a class="btn ghost" href="#contacto" data-contact="form">Prefiero completar un formulario</a>
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <!-- 9. Fondo del mar -->
+  <footer class="foot" data-depth="4000">
+    <canvas id="bathy" aria-hidden="true"></canvas>
+    <div class="wrap">
+      <div class="foot-top">
+        <p class="foot-line" data-tw>Webs, sistemas e inteligencia artificial para negocios con fondo.</p>
+        <div class="foot-col">
+          <h3>Explorar</h3>
+          <a href="/portfolio">Portfolio</a><a href="/servicios">Servicios</a><a href="/ia">IA</a><a href="/nosotros">Nosotros</a>
+        </div>
+        <div class="foot-col">
+          <h3>Contacto</h3>
+          <a href="#contacto">Escríbenos</a>
+        </div>
+        <div class="foot-col">
+          <h3>Fondo del mar</h3>
+          <span data-bathy-name>—</span><span data-bathy-depth></span><span data-bathy-pos></span>
+        </div>
+      </div>
+      <div class="foot-word display" data-tw data-tw-step="95" data-tw-caret="stay">Ceto Studio</div>
+      <p class="foot-credits">Láminas: E. Haeckel y A. Günther, HMS Challenger (1887–1888) y Kunstformen der Natur (1904), dominio público. Video y ecograma: NOAA Ocean Exploration. Batimetría: NOAA NCEI, ETOPO1. Tipografías: Sprat y Ronzino (Collletttivo), Martian Mono (Evil Martians).</p>
+      <div class="foot-base">
+        <span>© <span data-year>2026</span> Ceto Studio · Quimi &amp; Cori</span>
+        <span>Tu hora <span data-live="time">--:--</span></span>
+        <span><a href="#superficie-0" data-top>Volver a la superficie ↑</a></span>
+      </div>
+    </div>
+  </footer>
+</Base>

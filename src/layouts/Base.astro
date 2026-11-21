@@ -1,0 +1,57 @@
+---
+import '../styles/global.css';
+import Nav from '../components/Nav.astro';
+const {
+  title = 'Ceto Studio — webs, sistemas e inteligencia artificial',
+  description = 'Hacemos webs, sistemas e inteligencia artificial para negocios de servicios y profesionales. Dos personas, las mismas de principio a fin.',
+  page = 'inner',
+  depth = 300,
+} = Astro.props;
+---
+<!doctype html>
+<html lang="es" data-page={page} data-depth={depth}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content={page === 'home' ? '#F2F6F7' : '#0A1C2B'} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="/fonts/Sprat-Regular.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/Ronzino-Regular.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/MartianMono.woff2" as="font" type="font/woff2" crossorigin />
+    <script is:inline>
+      (function () {
+        var d = document.documentElement, rm = matchMedia('(prefers-reduced-motion: reduce)').matches, arriving = false;
+        d.classList.add('js');
+        try { arriving = sessionStorage.getItem('ceto-nav') === '1'; sessionStorage.removeItem('ceto-nav'); } catch (e) {}
+        if (rm) d.classList.add('rm');
+        if (arriving && !rm) d.classList.add('arriving');
+        if (d.dataset.page === 'home' && !arriving && !rm) d.classList.add('intro');
+      })();
+    </script>
+  </head>
+  <body>
+    <canvas id="gl" aria-hidden="true"></canvas>
+    <canvas id="whale" aria-hidden="true"></canvas>
+    <Nav />
+    <slot />
+    <div class="meter" aria-hidden="true">
+      <span class="meter-m" id="meter-m">0 m</span>
+      <span class="meter-z" id="meter-z">Superficie</span>
+      <span class="meter-bar"><b id="meter-dot"></b></span>
+    </div>
+    <div class="cur-ring" aria-hidden="true" data-hot="0"><span class="cur-label"></span></div>
+    <div class="cur-dot" aria-hidden="true"></div>
+    <div class="curtain" aria-hidden="true">
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0 100 L100 100 L100 100 L0 100 Z"></path></svg>
+      <div class="curtain-name"></div>
+    </div>
+    <script>
+      import '../scripts/app.ts';
+    </script>
+  </body>
+</html>

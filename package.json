@@ -1,0 +1,20 @@
+{
+  "name": "ceto-studio",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "deploy": "astro build && wrangler deploy"
+  },
+  "dependencies": {
+    "astro": "^7.4.13",
+    "gsap": "^3.15.1",
+    "lenis": "^1.3.27"
+  },
+  "devDependencies": {
+    "wrangler": "^4.166.0"
+  }
+}

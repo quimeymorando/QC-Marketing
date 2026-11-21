@@ -1,0 +1,8 @@
+---
+// Símbolo de Ceto Studio: las dos colas de ballena, calcadas del boceto de Cori (sin los óvalos).
+import logo from '../data/logo.json';
+const { class: cls, sw = 26 } = Astro.props;
+---
+<svg class={cls} viewBox={logo.viewBox} fill="none" stroke="currentColor" stroke-width={sw} stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  {logo.strokes.map((d: string) => <path d={d} />)}
+</svg>
