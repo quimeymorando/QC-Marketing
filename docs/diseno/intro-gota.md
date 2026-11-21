@@ -20,7 +20,7 @@ Idea de Cori: antes de la home, una gota cae al agua. El agua sube y, a medida q
 
 ## Reglas
 - **Se puede saltar:** clic, scroll o tecla aceleran todo ×4, igual que Two Halves.
-- **Solo la primera vez** que se entra en la sesión. Si vuelven a la home, va directo al hero.
+- **Cuándo aparece:** en cada carga completa de la página. Al navegar entre secciones de la web no se repite.
 - **"Reducir movimiento":** el nombre aparece con un fundido simple, sin gota ni ondas.
 - **Sonido:** los navegadores no dejan reproducir sonido antes de que la persona toque algo. **La gota no puede sonar en la intro.** El sonido va con el botón de sonido.
 - **Celular:** la misma intro, con el nombre en dos líneas ("Ceto" / "Studio").
