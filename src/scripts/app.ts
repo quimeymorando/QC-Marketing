@@ -52,22 +52,9 @@ initBathy().then((b) => (bathy = b));
 
 let lp: [number, number] | null = null, lastMove = 0;
 
-// --- sonido: la primera vez se elige en la intro; después se recuerda durante la visita ---
+// --- sonido: apagado por defecto; si lo encendieron en esta visita, se retoma con el primer clic ---
 let soundPref: string | null = null; try { soundPref = sessionStorage.getItem('ceto-sound'); } catch {}
 if (soundPref === '1') { const arm = () => { sound.set(true); removeEventListener('pointerdown', arm); removeEventListener('keydown', arm); }; addEventListener('pointerdown', arm); addEventListener('keydown', arm); }
-function askSound(): Promise<void> {
-  const gate = document.querySelector<HTMLElement>('.gate'); if (!gate) return Promise.resolve();
-  return new Promise((done) => {
-    let closed = false;
-    const choose = (v: boolean) => { if (closed) return; closed = true; clearTimeout(auto); removeEventListener('wheel', quiet); removeEventListener('touchmove', quiet); removeEventListener('keydown', esc); sound.set(v); gate.classList.remove('on'); done(); };
-    const quiet = () => choose(false), esc = (e: KeyboardEvent) => { if (e.key === 'Escape') choose(false); };
-    const auto = setTimeout(() => choose(false), 9000);   // sin respuesta: entra en silencio, nadie queda trabado
-    gate.querySelectorAll<HTMLButtonElement>('[data-gate]').forEach((b) => b.addEventListener('click', () => choose(b.dataset.gate === 'on'), { once: true }));
-    addEventListener('wheel', quiet, { passive: true }); addEventListener('touchmove', quiet, { passive: true }); addEventListener('keydown', esc);
-    gate.classList.add('on');
-  });
-}
-
 // --- linterna del abismo: ahí abajo no llega la luz; se ve lo que alumbra el cursor ---
 const lampZone = !reduce ? document.querySelector<HTMLElement>('.zone-abismo') : null, lampEl = lampZone?.querySelector<HTMLElement>('.zone-grid') || null, lampAim = lampZone?.querySelector<HTMLElement>('.zone-pain') || null;
 const fineHover = matchMedia('(hover: hover) and (pointer: fine)').matches; let lampX = 0, lampY = 0, lampK = -1, lampInit = false;
@@ -155,7 +142,7 @@ addEventListener('resize', () => { clearTimeout(rz); rz = window.setTimeout(() =
       root.classList.add('sea-low');
       const seaUp = () => { root.classList.remove('sea-low'); if (line) gsap.to(line, { level: 1, duration: 1.35, ease: 'power2.inOut', onComplete: () => depth.measure() }); };
       const typeOn = () => { water?.still(); started = true; startType(); };   // el título se escribe sobre agua en calma
-      if (water) await playIntro(water, line, typeOn, { ask: soundPref === null ? askSound : undefined, drip: () => sound.drip(), swell: (d) => sound.swell(d), onSea: seaUp });
+      if (water) await playIntro(water, line, typeOn, { drip: () => sound.drip(), swell: (d) => sound.swell(d), onSea: seaUp });
       else { if (line) line.level = 1; await introFallback(); seaUp(); typeOn(); }
       lenis?.start(); introOn = false;
     }

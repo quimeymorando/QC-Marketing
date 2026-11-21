@@ -7,7 +7,7 @@
 
 type Item = {
   el: HTMLElement; chars: HTMLElement[]; ms: number; caret: string | null;
-  name?: string; after?: string; visible: boolean; start: number; shown: number; done: boolean; doneAt: number;
+  name?: string; after?: string; visible: boolean; start: number; shown: number; done: boolean; doneAt: number; prog: number; last: number;
 };
 
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -28,6 +28,9 @@ function split(el: HTMLElement): HTMLElement[] {
       if (child.nodeType === 3) {
         const txt = (child.textContent || '').replace(/\s+/g, ' ');
         if (!txt.trim() && !txt.length) continue;
+        // un espacio suelto entre dos bloques (dos líneas de un título) no es una letra: si se escribiera, el cursor
+        // abriría ahí una línea de más por un instante y empujaría todo lo de abajo
+        if (!txt.trim()) { const p = child.previousSibling, n = child.nextSibling; const blk = (x: Node | null) => !!x && x.nodeType === 1 && /block|flex|grid/.test(getComputedStyle(x as Element).display) && !/inline/.test(getComputedStyle(x as Element).display); if (blk(p) || blk(n)) { child.remove(); continue; } }
         const frag = document.createDocumentFragment();
         for (const g of graphemes(txt)) {
           const s = document.createElement('span'); s.className = 'tw-c'; s.textContent = g; frag.appendChild(s); out.push(s);
@@ -65,8 +68,13 @@ function finish(it: Item, now: number) {
   onChange(it.el);
 }
 
+// El texto se escribe a su ritmo, pero nunca se queda atrás del scroll:
+// - los textos encadenados (título → párrafos) arrancan escalonados, no uno cuando termina el otro;
+// - cuanto más arriba de la pantalla está un texto sin terminar, más rápido se escribe;
+// - si llegó al tercio superior, se completa de una.
 function tick(now: number) {
   if (started) {
+    const vh = innerHeight;
     for (const it of items) {
       if (it.done) continue;
       if (!it.start) {
@@ -74,14 +82,19 @@ function tick(now: number) {
         if (dep && !dep.done) {
           // si el texto del que depende quedó arriba de la pantalla sin escribirse, se completa de una
           if (!dep.start && dep.el.getBoundingClientRect().bottom < 0) finish(dep, now);
-          continue;
+          // después de un título que deja el cursor esperando (hero, cierre) se espera a que termine; el resto arranca escalonado
+          if (dep.caret === 'stay' || !dep.start || now - dep.start < 240) continue;
         }
-        if (dep && now - dep.doneAt < 160) continue;
+        if (dep && dep.done && now - dep.doneAt < 160) continue;
         if (!it.visible) { if (it.el.getBoundingClientRect().bottom < -40) finish(it, now); continue; }
-        it.start = now;
+        it.start = now; it.last = now; it.prog = 0;
         if (it.caret) { const k = caretEl(); placeCaret(it, k, 0); }
       }
-      const n = Math.min(it.chars.length, Math.floor((now - it.start) / it.ms) + 1);
+      const top = it.el.getBoundingClientRect().top;
+      if (top < vh * 0.3 && it.caret !== 'stay') { finish(it, now); continue; }
+      const hurry = it.caret === 'stay' ? 1 : 1 + 7 * Math.pow(Math.min(1, Math.max(0, (vh * 0.72 - top) / (vh * 0.42))), 1.4);
+      it.prog += ((now - it.last) / it.ms) * hurry; it.last = now;
+      const n = Math.min(it.chars.length, Math.floor(it.prog) + 1);
       if (n > it.shown) {
         for (let i = it.shown; i < n; i++) it.chars[i].classList.add('on');
         it.shown = n;
@@ -124,9 +137,9 @@ export function initType(opts: { onChange?: (el: HTMLElement) => void } = {}) {
     const chars = split(el); if (!chars.length) return;
     const fs = parseFloat(getComputedStyle(el).fontSize) || 16;
     let ms = el.dataset.twStep ? +el.dataset.twStep : Math.min(38, Math.max(4, fs * 0.5));
-    if (!el.dataset.twStep) ms = Math.min(1000, Math.max(260, ms * chars.length)) / chars.length;
-    ms = Math.min(ms, 2400 / chars.length);
-    const it: Item = { el, chars, ms, caret: el.dataset.twCaret ?? null, name: el.dataset.twName, after: el.dataset.twAfter, visible: false, start: 0, shown: 0, done: false, doneAt: 0 };
+    if (!el.dataset.twStep) ms = Math.min(750, Math.max(240, ms * chars.length)) / chars.length;
+    ms = Math.min(ms, (el.dataset.twCaret === 'stay' ? 2400 : 1500) / chars.length);   // ningún bloque tarda más de 1,5 s (los títulos que dejan el cursor, 2,4 s)
+    const it: Item = { el, chars, ms, caret: el.dataset.twCaret ?? null, name: el.dataset.twName, after: el.dataset.twAfter, visible: false, start: 0, shown: 0, done: false, doneAt: 0, prog: 0, last: 0 };
     (el as any).__tw = it; items.push(it); if (it.name) byName.set(it.name, it);
     io.observe(el);
   });

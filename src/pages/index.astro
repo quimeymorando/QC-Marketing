@@ -24,7 +24,7 @@ const zoneMedia: Record<string, { plates?: number[]; clip?: string }> = { superf
       <canvas id="waterline" aria-hidden="true"></canvas>
       <div class="wrap hero-in">
         <div class="hero-sky"></div>
-        <h1 class="hero-title display" data-gl data-tw data-tw-step="62" data-tw-caret="stay" data-tw-name="hero"><span class="hero-l1">Lo grande pasa</span> <span class="hero-l2">bajo el agua.</span></h1>
+        <h1 class="hero-title display" aria-label="Lo grande pasa bajo el agua." data-gl data-tw data-tw-step="62" data-tw-caret="stay" data-tw-name="hero"><span class="hero-l1">Lo grande pasa</span><span class="hero-l2">bajo el agua.</span></h1>
         <div class="hero-sea">
           <div>
             <p class="hero-sub" data-tw data-tw-after="hero" data-tw-name="herosub">Somos Ceto Studio. Hacemos webs, sistemas e inteligencia artificial para negocios de servicios y profesionales.</p>
@@ -241,14 +241,6 @@ const zoneMedia: Record<string, { plates?: number[]; clip?: string }> = { superf
           <span data-bathy-name>—</span><span data-bathy-depth></span><span data-bathy-pos></span>
         </div>
       </div>
-      {plate(9) && (
-        <figure class="plate foot-monster">
-          <div class="plate-box" style={`aspect-ratio:${plate(9).width}/${plate(9).height};--src:url(/media/${plate(9).file})`}>
-            <div class="plate-img"></div><div class="plate-img lit"></div>
-          </div>
-          <figcaption><i>{plate(9).nombre}</i>Gessner, 1558</figcaption>
-        </figure>
-      )}
       <div class="foot-word display" data-tw data-tw-step="95" data-tw-caret="stay">Ceto Studio</div>
       <p class="foot-credits">Láminas: E. Haeckel y A. Günther, HMS Challenger (1887–1888) y Kunstformen der Natur (1904), dominio público. Grabados: C. Gessner, Historiae animalium (1558), dominio público, vía Smithsonian Libraries. Canto de ballena: NOAA PMEL. Batimetría: NOAA NCEI, ETOPO1. Tipografías: Sprat y Ronzino (Collletttivo), Martian Mono (Evil Martians).</p>
       <div class="foot-base">

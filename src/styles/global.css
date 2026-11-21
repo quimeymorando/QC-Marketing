@@ -137,19 +137,8 @@ html.has-cursor, html.has-cursor a, html.has-cursor button { cursor: none; }
 
 /* ---------- intro ---------- */
 html.intro .hero .wrap, html.intro .nav, html.intro .meter { opacity: 0; }
-/* elección de sonido: aparece bajo el nombre ya revelado; la intro sigue cuando eligen (o sola, a los 9 segundos) */
-.gate { position: fixed; left: 0; right: 0; bottom: clamp(118px, 21vh, 230px); z-index: 60; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 0 var(--gut); color: var(--petrol); opacity: 0; visibility: hidden; transform: translateY(8px); transition: opacity .35s, transform .35s, visibility 0s .35s; }
-.gate.on { opacity: 1; visibility: visible; transform: none; transition: opacity .7s, transform .7s var(--ease); }
 /* logo de la intro: se dibuja sobre el nombre y después viaja al menú */
 .intro-logo { position: fixed; left: 0; top: 0; z-index: 55; pointer-events: none; opacity: 0; overflow: visible; will-change: transform; }
-.gate-opts { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
-.gate button { padding: 14px 20px; border: 1px solid var(--petrol); font: 500 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; transition: background .25s, color .25s; }
-.gate button[data-gate="on"] { background: var(--petrol); color: var(--foam); }
-.gate button:hover, .gate button:focus-visible { background: var(--ink); border-color: var(--ink); color: var(--foam); }
-.gate-note { font: 400 9.5px/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; opacity: .62; text-align: center; }
-.gate-bar { width: 132px; height: 1px; background: currentColor; opacity: .55; transform-origin: left; }
-.gate.on .gate-bar { animation: gate-bar 9s linear forwards; }
-@keyframes gate-bar { to { transform: scaleX(0); } }
 html.sea-low .hero-sea { opacity: 0; }
 .hero-sea { transition: opacity .9s ease .5s; }
 .hero .wrap, .meter { transition: opacity .7s ease; }
@@ -341,14 +330,6 @@ html.js .pass.printed { clip-path: inset(0); transition: clip-path 1.5s steps(30
 /* ---------- footer (fondo del mar) ---------- */
 .foot { padding: clamp(80px, 14vh, 170px) 0 0; overflow: hidden; }
 #bathy { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; opacity: .9; }
-/* el monstruo del mapa: donde las cartas antiguas no sabían qué había, dibujaban uno. El cursor lo alumbra. */
-.foot-monster { position: relative; z-index: 1; margin: clamp(34px, 6vh, 72px) 0 0 auto; width: min(40vw, 540px); pointer-events: none; }
-.foot-monster .plate-box { width: 100%; }
-.foot-monster .plate-img { image-rendering: auto; opacity: .26; }
-.foot-monster .plate-img.lit { opacity: .95; -webkit-mask: var(--src) center / 100% 100% no-repeat, radial-gradient(circle 250px at var(--mx, -999px) var(--my, -999px), #000 0, #000 35%, transparent 100%); mask: var(--src) center / 100% 100% no-repeat, radial-gradient(circle 250px at var(--mx, -999px) var(--my, -999px), #000 0, #000 35%, transparent 100%); -webkit-mask-composite: source-in; mask-composite: intersect; }
-.foot-monster figcaption { margin-top: 8px; text-align: right; max-width: none; margin-left: auto; }
-.foot-monster + .foot-word { margin-top: clamp(20px, 4vh, 50px); }
-@media (max-width: 900px) { .foot-monster { width: 78vw; } }
 /* sonda: profundidad real y coordenadas del punto del mapa que está bajo el cursor */
 .foot-probe { position: absolute; left: 0; top: 0; z-index: 3; pointer-events: none; display: grid; gap: 3px; font-family: var(--mono); text-transform: uppercase; white-space: nowrap; opacity: 0; transition: opacity .25s; will-change: transform; }
 .foot-probe.on { opacity: 1; }
@@ -400,10 +381,6 @@ html.arriving .curtain { visibility: visible; }
 }
 @media (max-width: 560px) {
   body { font-size: 16px; }
-  .gate { bottom: calc(112px + env(safe-area-inset-bottom, 0px)); gap: 10px; }
-  .gate-opts { flex-wrap: nowrap; gap: 8px; }
-  .gate button { padding: 13px 11px; font-size: 10px; letter-spacing: .05em; white-space: nowrap; }
-  .gate-note { font-size: 8.5px; }
   .pk-grid { grid-template-columns: minmax(0, 1fr); max-width: 360px; }
   .pass { transform: none; }
 }
