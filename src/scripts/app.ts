@@ -115,7 +115,9 @@ addEventListener('resize', () => { clearTimeout(rz); rz = window.setTimeout(() =
     if (location.hash) root.classList.remove('intro');
     else {
       introOn = true; history.scrollRestoration = 'manual'; window.scrollTo(0, 0); lenis?.stop();
-      if (water) await playIntro(water, line); else await introFallback();
+      root.classList.add('sea-low');
+      const rise = () => { root.classList.remove('sea-low'); if (line) gsap.to(line, { level: 1, duration: 1.35, ease: 'power2.inOut', onComplete: () => depth.measure() }); started = true; startType(); };
+      if (water) await playIntro(water, line, rise); else { if (line) line.level = 1; await introFallback(); rise(); }
       lenis?.start(); introOn = false;
     }
   } else await arrive();

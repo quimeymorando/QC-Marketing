@@ -1,7 +1,7 @@
 // La ballena: un dibujo 2D en línea (como el logo) que sale del logo y baja nadando con el scroll.
 // - El cuerpo es una cadena de puntos que sigue una ruta ligada al scroll, con vueltas completas.
 // - Bate la cola, rema con las aletas, gira sobre sí misma en las vueltas y se acerca curiosa al cursor.
-// - Al zambullirse salpica; al nadar deja una estela de agua (la V que deja un animal al avanzar).
+// - Al nadar empuja la simulación de agua: la estela son ondas reales, no un dibujo.
 import type { Water } from './water';
 import type { Waterline } from './waterline';
 
@@ -14,15 +14,14 @@ export function createWhale(canvas: HTMLCanvasElement, water: Water | null, line
   const K = 26;
   let vw = 1, vh = 1, dpr = 1, L = 100, u = 0, phase = 0, prev: { x: number; y: number } | null = null, lastSide = 0;
   let cx = 0, cy = 0, spinAt = -1e9, body = { x: -999, y: -999 };
-  const wake: { x: number; y: number; nx: number; ny: number; t: number }[] = [];
-  const drops: { x: number; y: number; vx: number; vy: number; r: number }[] = [];
+  let tail: { x: number; y: number } | null = null, trail = 0;
   const logo = document.querySelector<HTMLElement>('.nav-logo svg');
   let lx = 60, ly = 36;
 
   function resize() {
     vw = innerWidth; vh = innerHeight; dpr = Math.min(2, devicePixelRatio || 1);
     canvas.width = Math.round(vw * dpr); canvas.height = Math.round(vh * dpr);
-    L = Math.min(112, Math.max(72, vw * 0.072));
+    L = Math.min(82, Math.max(54, vw * 0.052));
     if (logo) { const r = logo.getBoundingClientRect(); lx = r.left + r.width / 2; ly = r.top + r.height / 2 + scrollY; }
   }
   const maxS = () => Math.max(1, document.documentElement.scrollHeight - vh);
@@ -38,9 +37,7 @@ export function createWhale(canvas: HTMLCanvasElement, water: Water | null, line
       const w = 760, k2 = (s - (c * M - w / 2)) / w;
       if (k2 > 0 && k2 < 1) { const q = k2 * k2 * (3 - 2 * k2), th = q * Math.PI * 2, R = Math.min(vw, vh) * 0.13; ox += dir * R * Math.sin(th); oy += -R * (1 - Math.cos(th)); roll = q * dir; }
     }
-    // salto: al salir del logo se eleva un poco y cae de cabeza al mar
-    const jump = Math.sin(Math.PI * k) * vh * 0.07;
-    return { x: lx + (xr + ox - lx) * e, y: ly + s * (1 - e) + (yr + oy - (ly + s * (1 - e))) * e - jump, e, roll };
+    return { x: lx + (xr + ox - lx) * e, y: ly + s * (1 - e) + (yr + oy - (ly + s * (1 - e))) * e, e, roll };
   }
 
   /** El cursor tocó la pantalla: si fue sobre la ballena, da una vuelta sobre sí misma. */
@@ -51,10 +48,10 @@ export function createWhale(canvas: HTMLCanvasElement, water: Water | null, line
 
   function frame(t: number, scroll: number, active: boolean, pointer: [number, number] | null) {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, vw, vh);
-    if (!active) { u = scroll; prev = null; return; }
+    if (!active) { u = scroll; prev = null; tail = null; return; }
     u += (scroll - u) * 0.085;
     const head = route(u), scale = 0.12 + 0.88 * head.e;
-    if (u < 3) { prev = null; body = { x: -999, y: -999 }; return; }
+    if (u < 3) { prev = null; tail = null; body = { x: -999, y: -999 }; return; }
     const pts: { x: number; y: number }[] = []; let uu = u; const seg = (L * scale) / (K - 1);
     for (let i = 0; i < K; i++) { const p = route(uu); pts.push({ x: p.x, y: p.y }); const q = route(uu - 4), sp = Math.hypot(p.x - q.x, p.y - q.y) / 4 || 1; uu -= seg / sp; }
     const moved = prev ? Math.hypot(pts[0].x - prev.x, pts[0].y - prev.y) : 0;
@@ -119,28 +116,6 @@ export function createWhale(canvas: HTMLCanvasElement, water: Water | null, line
     detail.moveTo(...pt(fl * 0.08, 0)); detail.lineTo(...pt(fl * 0.5, 0));
 
     const surfY = line ? line.yAt(P[0].x) - scroll : -1e6;
-    const now = t;
-
-    // ---- estela de agua ----
-    if (moved > 0.9 && head.e > 0.5) { wake.push({ x: T.x, y: T.y + scroll, nx, ny, t: now }); if (wake.length > 150) wake.shift(); }
-    while (wake.length && now - wake[0].t > 2800) wake.shift();
-    ctx.lineCap = 'round';
-    for (const sgn of [1, -1]) {
-      for (let i = 1; i < wake.length; i++) {
-        const a = wake[i - 1], b = wake[i], age = (now - b.t) / 2800, age0 = (now - a.t) / 2800;
-        const sa = 2 + 62 * Math.pow(age0, 0.75), sb = 2 + 62 * Math.pow(age, 0.75);
-        const ax = a.x + a.nx * sa * sgn + Math.sin(i * 0.9 + sgn) * 1.2, ay = a.y - scroll + a.ny * sa * sgn, bxx = b.x + b.nx * sb * sgn + Math.sin(i * 0.9 + 0.9 + sgn) * 1.2, byy = b.y - scroll + b.ny * sb * sgn;
-        if (Math.hypot(ax - bxx, ay - byy) > 60) continue;
-        ctx.strokeStyle = `rgba(${byy < surfY ? INK : FOAM},${(Math.pow(1 - age, 1.6) * 0.62).toFixed(3)})`; ctx.lineWidth = 0.6 + (1 - age) * 1.1;
-        ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bxx, byy); ctx.stroke();
-      }
-    }
-    // remolinos que se abren detrás de la cola
-    for (let i = 0; i < wake.length; i += 5) {
-      const w = wake[i], age = (now - w.t) / 2800, y = w.y - scroll;
-      ctx.strokeStyle = `rgba(${y < surfY ? INK : FOAM},${(Math.pow(1 - age, 2) * 0.3).toFixed(3)})`; ctx.lineWidth = 0.8;
-      ctx.beginPath(); ctx.ellipse(w.x, y, 3 + age * 26, (3 + age * 26) * 0.55, Math.atan2(w.ny, w.nx), 0, Math.PI * 2); ctx.stroke();
-    }
 
     // ---- cuerpo: tinta sobre el agua, espuma debajo ----
     const draw = (rgb: string, y0: number, y1: number) => {
@@ -157,24 +132,28 @@ export function createWhale(canvas: HTMLCanvasElement, water: Water | null, line
     if (line) {
       const side = P[0].y > surfY ? 1 : -1;
       if (lastSide && side !== lastSide) {
-        line.splash(P[0].x, 11 * side); water?.drop(P[0].x, surfY, 0.06, 0.05);
-        for (let i = 0; i < 18; i++) drops.push({ x: P[0].x + (Math.random() - 0.5) * 26, y: surfY, vx: (Math.random() - 0.5) * 7, vy: -(2.5 + Math.random() * 7), r: 1 + Math.random() * 2.2 });
+        line.splash(P[0].x, 7 * side); water?.drop(P[0].x, surfY, 0.05, 0.04);
       }
       lastSide = side;
       const ty = T.y - surfY; if (Math.abs(ty) < 14 && moved > 0.6) line.splash(T.x, 2.6 * Math.sign(ty || 1));
     }
-    for (let i = drops.length - 1; i >= 0; i--) {
-      const d = drops[i]; d.vy += 0.34; d.x += d.vx; d.y += d.vy;
-      if (d.y > surfY + 4 && d.vy > 0) { if (line && d.r > 2) line.splash(d.x, 1.2); drops.splice(i, 1); continue; }
-      ctx.fillStyle = `rgba(14,52,72,.9)`; ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2); ctx.fill();
-    }
-
     // la cola y el morro empujan el agua de verdad (ondas y plancton)
-    if (water && water.ok && moved > 0.4 && head.e > 0.3) {
-      const k = Math.min(0.034, 0.007 + moved * 0.0028);
-      water.drop(T.x, T.y, 0.022, k); water.drop(P[Math.round(K * 0.55)].x, P[Math.round(K * 0.55)].y, 0.016, k * 0.5);
-      if (moved > 2) water.drop(P[0].x, P[0].y, 0.013, k * 0.5);
+    // estela: la cola deja un rastro continuo en la simulación de agua (ondas reales que se abren y se apagan solas).
+    // Se siembra a lo largo del camino recorrido, alternando lados como los remolinos que deja una cola al batir.
+    const tp = { x: T.x, y: T.y + scroll };
+    if (water && water.ok && head.e > 0.3 && tail) {
+      const dx = tp.x - tail.x, dy = tp.y - tail.y, d = Math.hypot(dx, dy);
+      if (d > 0.6 && d < 900) {
+        // muchas gotas chicas y seguidas: sus ondas se suman y abren sola la V que deja cualquier cosa que avanza en el agua
+        const n = Math.min(16, Math.ceil(d / 7)), ux = dx / d, uy = dy / d, power = Math.min(1, 0.3 + d * 0.045);
+        for (let i = 1; i <= n; i++) {
+          trail += d / n;
+          const beat = Math.sin(trail / (LL * 0.2)), off = beat * LL * 0.04;
+          water.drop(tail.x + (dx * i) / n - uy * off, tail.y + (dy * i) / n + ux * off - scroll, 0.012, (0.011 + 0.006 * Math.abs(beat)) * power);
+        }
+      }
     }
+    tail = tp;
     prev = { x: pts[0].x, y: pts[0].y };
     (window as any).__wp = [body.x, body.y];
   }

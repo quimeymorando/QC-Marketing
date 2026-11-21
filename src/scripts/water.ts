@@ -31,7 +31,7 @@ void main(){
   vec2 p = uv - vec2(0., shift);
   vec4 c = at(p);
   float a = (at(p+vec2(px.x,0.)).r + at(p-vec2(px.x,0.)).r + at(p+vec2(0.,px.y)).r + at(p-vec2(0.,px.y)).r)*.25;
-  c.g += (a - c.r)*2.; c.g *= .992; c.r += c.g; c.r *= .997;
+  c.g += (a - c.r)*2.; c.g *= .9935; c.r += c.g; c.r *= .9975;
   // plancton: se enciende con el movimiento del agua, se agota y se recarga
   float fire = smoothstep(.0007,.0045,abs(c.g))*c.a;
   c.b = max(c.b*.95, fire);
@@ -62,11 +62,17 @@ void main(){
     float heroH = hero.x;
     if(pageY < heroH){
       vec2 tuv = vec2(uv.x, 1.-pageY/heroH) + g*vec2(1.5, 1.5*vh/heroH);
+      // lo que está bajo la superficie se mece apenas, como visto a través del agua
+      float under = smoothstep(hero.y, hero.y+40., pageY);
+      tuv += under*vec2(sin(pageY*.045+t*1.3), cos(uv.x*vw*.021+t*1.05))*vec2(.0011, .0016*vh/heroH);
       col = texture(tx, tuv);
     }
     float above = 1.-smoothstep(hero.y-24., hero.y+24., pageY);
     col = over(col, cyan, (clamp(gl*9.,0.,.34) + sp*.3)*above);
-    col = over(col, vec3(.74,.94,.98), (sp*.42 + smoothstep(.003,.03,gl)*.09)*(1.-above));
+    // bajo el agua: relieve. Una pendiente de la onda recibe luz y la otra queda en sombra.
+    float rel = dot(g, vec2(-.53,.85))*70.;
+    col = over(col, vec3(0.,.025,.045), clamp(-rel,0.,1.)*.2*(1.-above));
+    col = over(col, vec3(.74,.94,.98), (clamp(rel,0.,1.)*.2 + sp*.5 + smoothstep(.003,.03,gl)*.05)*(1.-above));
     float bio = hero.z;
     if(bio > .01){
       float cs = 7.; vec2 pp = vec2(uv.x*vw, pageY); vec2 id = floor(pp/cs), f = fract(pp/cs);

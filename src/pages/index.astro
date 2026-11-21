@@ -11,20 +11,24 @@ const media = (f: string) => fs.existsSync(path.join(mdir, f));
 const plates: any[] = media('plates.json') ? JSON.parse(fs.readFileSync(path.join(mdir, 'plates.json'), 'utf8')) : [];
 const plate = (n: number) => plates.find((p) => p.file === `plate-${n}.png`);
 const cap = (p: any) => `${p.nombreComun ? p.nombreComun[0].toUpperCase() + p.nombreComun.slice(1) + ' · ' : ''}${p.autor.split(' (')[0].replace('Albert C. L. G. ', 'A. ').replace('Ernst ', 'E. ')}, ${p.anio} · ${p.expedicion ? 'HMS Challenger' : 'Kunstformen der Natur'}, ${p.lamina.split(',')[0].split(' (')[0].replace('Pl.', 'lám.').replace('Tafel', 'lám.')}`;
-const zoneMedia: Record<string, { plates?: number[]; clip?: string }> = { luz: { plates: [6, 5] }, crepuscular: { clip: 'clip-1' }, abismo: { plates: [1] } };
+const zoneMedia: Record<string, { plates?: number[]; clip?: string }> = { superficie: { plates: [2] }, luz: { plates: [6, 5] }, crepuscular: { clip: 'clip-1' }, abismo: { plates: [1] } };
 ---
 <Base page="home" depth={0}>
   <main>
-    <!-- 1. Superficie -->
+    <!-- 1. Superficie: "Lo grande pasa" queda sobre el agua y "bajo el agua." queda, literalmente, bajo el agua -->
     <section class="hero" id="superficie-0" data-depth="0">
-      <div class="wrap">
-        <h1 class="hero-title display" data-gl data-tw data-tw-step="58" data-tw-caret="stay" data-tw-name="hero">Lo grande pasa<br /><span class="t2">bajo el agua.</span></h1>
-        <p class="hero-sub" data-gl data-tw data-tw-after="hero">Somos Ceto Studio. Hacemos webs, sistemas e inteligencia artificial para negocios de servicios y profesionales.</p>
-        <p class="hero-cta"><a class="btn" href="#manifiesto" data-magnetic>Baja con nosotros <i>↓</i></a></p>
-      </div>
-      <p class="hero-meta a" data-tw data-tw-after="hero">Ceto Studio — webs, sistemas e inteligencia artificial</p>
-      <p class="hero-meta b" data-tw data-tw-after="hero">Nivel del mar · 0 m<br />Desliza para sumergirte</p>
       <canvas id="waterline" aria-hidden="true"></canvas>
+      <div class="wrap hero-in">
+        <div class="hero-sky"></div>
+        <h1 class="hero-title display" data-gl data-tw data-tw-step="62" data-tw-caret="stay" data-tw-name="hero"><span class="hero-l1">Lo grande pasa</span> <span class="hero-l2">bajo el agua.</span></h1>
+        <div class="hero-sea">
+          <div>
+            <p class="hero-sub" data-gl data-tw data-tw-after="hero" data-tw-name="herosub">Somos Ceto Studio. Hacemos webs, sistemas e inteligencia artificial para negocios de servicios y profesionales.</p>
+            <p class="hero-cta"><a class="btn" href="#manifiesto" data-magnetic>Baja con nosotros <i>↓</i></a></p>
+          </div>
+          <p class="hero-meta" data-tw data-tw-after="herosub">Desliza para sumergirte</p>
+        </div>
+      </div>
     </section>
 
     <!-- 2. Manifiesto -->
@@ -54,9 +58,9 @@ const zoneMedia: Record<string, { plates?: number[]; clip?: string }> = { luz: {
           </section>
         )}
         <section class={`zone zone-${z.id}`} id={z.id} data-depth={z.depth}>
+          <div class="wrap zone-rule"><span data-tw>{z.label}</span><i aria-hidden="true"></i><span aria-hidden="true">0{i + 1} / 0{zones.length}</span></div>
           <div class="wrap zone-grid">
             <div class="zone-copy">
-              <p class="label" data-tw>{z.label}</p>
               <h2 class="zone-pain display" data-tw data-tw-step="30" data-tw-caret="end" data-tw-name={`z${i}`}>{z.pain[0]} <span class="t2">{z.pain[1]}</span></h2>
               <div class="zone-body">
                 {z.body.map((p, j) => <p data-tw data-tw-name={`z${i}p${j}`} data-tw-after={j ? `z${i}p${j - 1}` : `z${i}`}>{p}</p>)}
@@ -113,8 +117,7 @@ const zoneMedia: Record<string, { plates?: number[]; clip?: string }> = { luz: {
     <!-- 5. Portfolio -->
     <section class="wk" id="portfolio" data-depth="2600">
       <div class="wk-stage">
-        <h2 class="wk-title display" aria-label="Algunos que ya bajaron."><span data-tw data-tw-step="46" data-tw-name="wk1">Algunos que</span><span class="wk-gap"></span><span class="t2" data-tw data-tw-step="46" data-tw-after="wk1" data-tw-caret="end">ya bajaron.</span></h2>
-        <div class="wk-thumb" aria-hidden="true">{work.map((w, i) => <div class="wk-thumb-i" hidden={i > 0}><Mock i={i} hue={w.hue} small /></div>)}</div>
+        <h2 class="wk-title display" aria-label="Algunos que ya bajaron."><span data-tw data-tw-step="46" data-tw-name="wk1">Algunos que</span><span class="t2" data-tw data-tw-step="46" data-tw-after="wk1" data-tw-caret="end">ya bajaron.</span></h2>
         <ul class="wk-deck">
           {work.map((w, i) => (
             <li class="wk-card" style={`--i:${i}`} data-slug={w.slug}>

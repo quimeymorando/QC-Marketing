@@ -8,7 +8,7 @@ export const colorAt = (d: number) => {
   }
   return STOPS[STOPS.length - 1][1];
 };
-const zone = (d: number) => (d < 0.5 ? 'Superficie' : d < 200 ? 'Zona de luz' : d < 1000 ? 'Zona crepuscular' : d < 3950 ? 'Abismo' : 'Fondo del mar');
+const zone = (d: number) => (d < 10 ? 'Superficie' : d < 200 ? 'Zona de luz' : d < 1000 ? 'Zona crepuscular' : d < 3950 ? 'Abismo' : 'Fondo del mar');
 
 export function createDepth(surfPage: () => number) {
   const root = document.documentElement;
