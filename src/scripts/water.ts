@@ -225,7 +225,9 @@ export function createWater(canvas: HTMLCanvasElement): Water {
   };
 
   function resize() {
-    vw = innerWidth; vh = innerHeight; dpr = Math.min(maxDpr, devicePixelRatio || 1);
+    vw = document.documentElement.clientWidth || innerWidth; vh = innerHeight;
+    // la resolución se decide antes de mostrar nada: tope de ~5,3 millones de píxeles (un monitor grande no arranca en una calidad que después haya que bajar)
+    dpr = Math.min(maxDpr, devicePixelRatio || 1, Math.max(1, Math.sqrt(5.3e6 / (vw * vh))));
     W = canvas.width = Math.round(vw * dpr); H = canvas.height = Math.round(vh * dpr);
     SW = coarse ? 176 : 288; SH = Math.max(64, Math.round(SW * vh / vw));
     for (const t of tex) gl.deleteTexture(t); for (const f of fbo) gl.deleteFramebuffer(f);
@@ -298,13 +300,16 @@ export function createWater(canvas: HTMLCanvasElement): Water {
   }
 
   // calidad adaptativa: si los cuadros tardan, baja la resolución
-  let slow = 0, lastT = 0, acc = 0, textPending = false; const STEP_MS = 1000 / 120;
+  let slow = 0, lastT = 0, acc = 0, textPending = false, probeN = 0, probeSum = 0; const STEP_MS = 1000 / 120;
   function frame(t: number) {
     if (!alive) return;
     const dt = t - lastT; lastT = t;
     // solo baja la resolución si la pantalla va lenta de forma sostenida, y nunca mientras se escribe el título o corre la intro
     // (redibujar el texto es lo que tarda; bajar la calidad ahí hacía parpadear la tipografía)
-    const busy = state.intro > 0 || performance.now() < dirtyUntil + 600;
+    // Durante la intro se mide el equipo: si va lento, la calidad baja ahí (con todo en movimiento no se nota).
+    // Después solo puede bajar con el hero fuera de pantalla: el título nunca se vuelve a dibujar a la vista.
+    if (state.intro > 0 && dt > 0 && dt < 200) { if (++probeN > 20) { probeSum += dt; if (probeN >= 60) { if (probeSum / 40 > 30 && maxDpr > 1) { maxDpr = Math.max(1, maxDpr - 0.5); resize(); } probeN = 20; probeSum = 0; } } }
+    const busy = state.intro > 0 || performance.now() < dirtyUntil + 600 || state.scroll < state.heroH;
     if (!busy) { if (dt > 36 && dt < 200) { if (++slow > 80 && maxDpr > 1) { maxDpr = Math.max(1, maxDpr - 0.5); slow = 0; resize(); } } else if (slow > 0) slow = Math.max(0, slow - 2); }
     // el texto se redibuja siempre al menos una vez después del último cambio (aunque el cuadro llegue tarde): así nunca queda una letra sin aparecer
     if (textPending || performance.now() < dirtyUntil) { drawText(); textPending = false; }

@@ -53,14 +53,6 @@ const zoneMedia: Record<string, { plates?: number[]; clip?: string }> = { superf
     <!-- 3. Zonas -->
     {zones.map((z, i) => (
       <>
-        {z.id === 'abismo' && (
-          media('echogram.webp') && <section class="sec echo" id="ecograma" data-depth="1000">
-            <div class="wrap">
-              <div class="echo-strip" style="--src:url(/media/echogram.webp)" role="img" aria-label="Ecograma de sonar: una banda horizontal más clara muestra la capa de plancton y peces entre 300 y 800 metros"></div>
-              <p class="echo-cap"><span data-tw>Ecograma real · así se ve la vida en un sonar: la capa de dispersión profunda, entre 300 y 800 m</span><span data-tw>NOAA Ocean Exploration · Okeanos Explorer, 2019</span></p>
-            </div>
-          </section>
-        )}
         <section class={`zone zone-${z.id}`} id={z.id} data-depth={z.depth}>
           <div class="wrap zone-rule"><span data-tw>{z.label}</span><i aria-hidden="true"></i><span aria-hidden="true">0{i + 1} / 0{zones.length}</span></div>
           {z.id === 'abismo' && <p class="wrap lamp-note"><span data-tw>A esta profundidad no llega la luz.</span> <span class="lamp-fine" data-tw>Tu cursor es la linterna.</span></p>}
@@ -249,8 +241,16 @@ const zoneMedia: Record<string, { plates?: number[]; clip?: string }> = { superf
           <span data-bathy-name>—</span><span data-bathy-depth></span><span data-bathy-pos></span>
         </div>
       </div>
+      {plate(9) && (
+        <figure class="plate foot-monster">
+          <div class="plate-box" style={`aspect-ratio:${plate(9).width}/${plate(9).height};--src:url(/media/${plate(9).file})`}>
+            <div class="plate-img"></div><div class="plate-img lit"></div>
+          </div>
+          <figcaption><i>{plate(9).nombre}</i>Gessner, 1558</figcaption>
+        </figure>
+      )}
       <div class="foot-word display" data-tw data-tw-step="95" data-tw-caret="stay">Ceto Studio</div>
-      <p class="foot-credits">Láminas: E. Haeckel y A. Günther, HMS Challenger (1887–1888) y Kunstformen der Natur (1904), dominio público. Grabados: C. Gessner, Historiae animalium (1558), dominio público, vía Smithsonian Libraries. Ecograma: NOAA Ocean Exploration. Batimetría: NOAA NCEI, ETOPO1. Tipografías: Sprat y Ronzino (Collletttivo), Martian Mono (Evil Martians).</p>
+      <p class="foot-credits">Láminas: E. Haeckel y A. Günther, HMS Challenger (1887–1888) y Kunstformen der Natur (1904), dominio público. Grabados: C. Gessner, Historiae animalium (1558), dominio público, vía Smithsonian Libraries. Canto de ballena: NOAA PMEL. Batimetría: NOAA NCEI, ETOPO1. Tipografías: Sprat y Ronzino (Collletttivo), Martian Mono (Evil Martians).</p>
       <div class="foot-base">
         <span>© <span data-year>2026</span> Ceto Studio · Quimi &amp; Cori</span>
         <span>Tu hora <span data-live="time">--:--</span></span>

@@ -34,7 +34,7 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; }
-html { background: var(--ink); -webkit-text-size-adjust: 100%; }
+html { background: var(--ink); -webkit-text-size-adjust: 100%; scrollbar-gutter: stable; }   /* la barra de scroll no cambia el ancho de la página al aparecer */
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
 .lenis.lenis-stopped { overflow: hidden; }
@@ -341,6 +341,14 @@ html.js .pass.printed { clip-path: inset(0); transition: clip-path 1.5s steps(30
 /* ---------- footer (fondo del mar) ---------- */
 .foot { padding: clamp(80px, 14vh, 170px) 0 0; overflow: hidden; }
 #bathy { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; opacity: .9; }
+/* el monstruo del mapa: donde las cartas antiguas no sabían qué había, dibujaban uno. El cursor lo alumbra. */
+.foot-monster { position: relative; z-index: 1; margin: clamp(34px, 6vh, 72px) 0 0 auto; width: min(40vw, 540px); pointer-events: none; }
+.foot-monster .plate-box { width: 100%; }
+.foot-monster .plate-img { image-rendering: auto; opacity: .26; }
+.foot-monster .plate-img.lit { opacity: .95; -webkit-mask: var(--src) center / 100% 100% no-repeat, radial-gradient(circle 250px at var(--mx, -999px) var(--my, -999px), #000 0, #000 35%, transparent 100%); mask: var(--src) center / 100% 100% no-repeat, radial-gradient(circle 250px at var(--mx, -999px) var(--my, -999px), #000 0, #000 35%, transparent 100%); -webkit-mask-composite: source-in; mask-composite: intersect; }
+.foot-monster figcaption { margin-top: 8px; text-align: right; max-width: none; margin-left: auto; }
+.foot-monster + .foot-word { margin-top: clamp(20px, 4vh, 50px); }
+@media (max-width: 900px) { .foot-monster { width: 78vw; } }
 /* sonda: profundidad real y coordenadas del punto del mapa que está bajo el cursor */
 .foot-probe { position: absolute; left: 0; top: 0; z-index: 3; pointer-events: none; display: grid; gap: 3px; font-family: var(--mono); text-transform: uppercase; white-space: nowrap; opacity: 0; transition: opacity .25s; will-change: transform; }
 .foot-probe.on { opacity: 1; }

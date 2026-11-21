@@ -35,7 +35,7 @@ export function createWhale(canvas: HTMLCanvasElement, water: Water | null, line
     if (passBox) { const r = passBox.getBoundingClientRect(); tk0 = r.top + sy - vh; tk1 = r.bottom + sy; }
   }
   function resize() {
-    vw = innerWidth; vh = innerHeight; dpr = Math.min(2, devicePixelRatio || 1);
+    vw = document.documentElement.clientWidth || innerWidth; vh = innerHeight; dpr = Math.min(2, devicePixelRatio || 1);
     canvas.width = Math.round(vw * dpr); canvas.height = Math.round(vh * dpr);
     L = Math.min(60, Math.max(40, vw * 0.037));
     measure();

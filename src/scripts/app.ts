@@ -25,6 +25,7 @@ const hero = document.querySelector<HTMLElement>('.hero');
 let water: Water | null = null;
 if (!reduce) { const w = createWater(document.getElementById('gl') as HTMLCanvasElement); if (w.ok) water = w; }
 const line = createWaterline(document.getElementById('waterline') as HTMLCanvasElement | null, hero);
+if (line && isHome && root.classList.contains('intro') && !location.hash) line.level = 0;   // con intro, el mar arranca abajo desde el primer cuadro (si no, se veía un instante arriba)
 const depth = createDepth(() => (line ? line.surfPage() : -1000));
 
 // --- texto ---
