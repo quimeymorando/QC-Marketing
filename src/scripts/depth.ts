@@ -36,8 +36,8 @@ export function createDepth(surfPage: () => number) {
     const end = scroll + innerHeight >= document.documentElement.scrollHeight - 90 ? '1' : '0'; if (root.dataset.end !== end) root.dataset.end = end;
     const c = colorAt(value);
     root.style.setProperty('--bg', `rgb(${c})`);
-    const txt = Math.round(value).toLocaleString('es-ES').replace(/ /g, '.') + ' m';
-    if (txt !== lastTxt && mEl) { mEl.textContent = txt; lastTxt = txt; zEl!.textContent = zone(value); dot!.style.left = (Math.min(4000, value) / 4000) * 63 + 'px'; }
+    const txt = String(Math.round(value));
+    if (txt !== lastTxt && mEl) { mEl.innerHTML = `<i>${'0'.repeat(Math.max(0, 4 - txt.length))}</i>${txt} m`; lastTxt = txt; zEl!.textContent = zone(value); dot!.style.left = (Math.min(4000, value) / 4000) * 63 + 'px'; }
     return value;
   }
   measure();

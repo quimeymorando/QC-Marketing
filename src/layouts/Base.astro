@@ -40,13 +40,12 @@ const {
     <Nav />
     <slot />
     <div class="meter" aria-hidden="true">
-      <span class="meter-m" id="meter-m">0 m</span>
+      <span class="meter-m" id="meter-m"><i>000</i>0 m</span>
       <span class="meter-z" id="meter-z">Superficie</span>
       <span class="meter-bar"><b id="meter-dot"></b></span>
     </div>
     <button class="sound" type="button" data-sound aria-pressed="false" aria-label="Activar o apagar el sonido"><span class="sound-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>Sonido: <span data-sound-state>no</span></span></button>
-    <div class="cur-ring" aria-hidden="true" data-hot="0"><span class="cur-label"></span></div>
-    <div class="cur-dot" aria-hidden="true"></div>
+    <div class="cur" aria-hidden="true" data-hot="0"><i></i><span class="cur-label"></span></div>
     <div class="curtain" aria-hidden="true">
       <svg viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0 100 L100 100 L100 100 L0 100 Z"></path></svg>
       <div class="curtain-name"></div>

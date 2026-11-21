@@ -13,6 +13,8 @@ export type WaterState = {
 export type Water = {
   ok: boolean; state: WaterState;
   drop(x: number, y: number, r?: number, k?: number): void;
+  /** Camino reciente de la cola: n puntos (x, y en pantalla, edad 0..1, distancia) y el largo de la ballena. */
+  setWake(data: Float32Array, n: number, len: number): void;
   textDirty(ms?: number): void;
   drawName(): void;
   frame(t: number): void;
@@ -44,14 +46,37 @@ void main(){ vec4 c = texture(s,uv); vec2 d = uv-at; d.x *= asp; float f = max(0
 
 const SHOW = HEAD + `uniform sampler2D s, tx, nm;
 uniform vec2 px; uniform vec4 vp; uniform vec4 hero; uniform vec4 intro; uniform vec4 intro2; uniform vec2 intro3;
+uniform vec4 wk[24]; uniform vec4 wkp; uniform vec4 wkb;
 float hash(vec2 p){ p = fract(p*vec2(123.34,456.21)); p += dot(p,p+45.32); return fract(p.x*p.y); }
 float vn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); return mix(mix(hash(i),hash(i+vec2(1.,0.)),f.x),mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.,1.)),f.x),f.y); }
 float fbm(vec2 p){ return .5*vn(p)+.25*vn(p*2.03+7.)+.125*vn(p*4.1+13.); }
+// Estela de la ballena: altura del agua alrededor del camino que dejó la cola (x, y, edad 0..1, distancia recorrida).
+// Dos lomos que se abren en V y un surco al medio; todo se ensancha y se apaga con la edad.
+float wakeH(vec2 p){
+  int n = int(wkp.x); float best = 1e9, ag = 1.;
+  for(int i=0;i<23;i++){
+    if(i >= n-1) break;
+    vec2 a = wk[i].xy, ab = wk[i+1].xy - a; float tt = clamp(dot(p-a,ab)/max(dot(ab,ab),1e-4),0.,1.);
+    float dd = length(p-a-ab*tt);
+    if(dd < best){ best = dd; ag = mix(wk[i].z, wk[i+1].z, tt); }
+  }
+  float LL = wkp.z, w = LL*(.13 + .85*pow(ag,.75)), th = LL*(.13 + .12*ag);
+  float q = (best-w)/th, q2 = best/(w*.7+2.);
+  // lomos de la V menos el surco del medio; al ensancharse pierden pendiente y se compensa para que no desaparezcan de golpe
+  return (exp(-q*q) - .5*exp(-q2*q2))*pow(1.-ag,1.1)*smoothstep(0.,.035,ag)*(1.+1.2*ag);
+}
 vec4 over(vec4 d, vec3 c, float a){ a = clamp(a,0.,1.); return vec4(c*a + d.rgb*(1.-a), a + d.a*(1.-a)); }
 void main(){
   float vw=vp.x, vh=vp.y, scroll=vp.z, t=vp.w;
   float l=texture(s,uv-vec2(px.x,0.)).r, r=texture(s,uv+vec2(px.x,0.)).r, d=texture(s,uv-vec2(0.,px.y)).r, u=texture(s,uv+vec2(0.,px.y)).r;
-  vec2 g = vec2(l-r,d-u); float gl = length(g);
+  vec2 g = vec2(l-r,d-u);
+  vec2 pc = vec2(uv.x*vw, (1.-uv.y)*vh);
+  float hw = 0.; if(wkp.x > 1.5 && pc.x > wkb.x && pc.y > wkb.y && pc.x < wkb.z && pc.y < wkb.w) hw = wakeH(pc);
+  hw *= .7 + .6*vn(vec2(pc.x, pc.y+scroll)*.045);   // el agua nunca es pareja
+  vec2 gwv = -vec2(dFdx(hw), dFdy(hw))*wkp.y*.26;
+  gwv *= min(1., .022/max(length(gwv),1e-5));   // sin picos donde el camino se cruza consigo mismo
+  vec2 g0 = g; g += gwv;   // g0 = solo ondas (para refractar el texto); g = ondas + estela (para la luz)
+  float gl = length(g);
   vec3 n = normalize(vec3(g*28.,1.));
   float sp = pow(max(0.,dot(reflect(normalize(vec3(-.4,.6,-1.)),n),vec3(0.,0.,1.))),60.);
   float pageY = scroll + (1.-uv.y)*vh;
@@ -61,7 +86,7 @@ void main(){
   if(intro.x < .5){
     float heroH = hero.x;
     if(pageY < heroH){
-      vec2 tuv = vec2(uv.x, 1.-pageY/heroH) + g*vec2(1.5, 1.5*vh/heroH);
+      vec2 tuv = vec2(uv.x, 1.-pageY/heroH) + g0*vec2(1.5, 1.5*vh/heroH);
       // lo que está bajo la superficie se mece apenas, como visto a través del agua
       float under = smoothstep(hero.y, hero.y+40., pageY);
       tuv += under*vec2(sin(pageY*.045+t*1.3), cos(uv.x*vw*.021+t*1.05))*vec2(.0011, .0016*vh/heroH);
@@ -71,8 +96,9 @@ void main(){
     col = over(col, cyan, (clamp(gl*9.,0.,.34) + sp*.3)*above);
     // bajo el agua: relieve. Una pendiente de la onda recibe luz y la otra queda en sombra.
     float rel = dot(g, vec2(-.53,.85))*70.;
-    col = over(col, vec3(0.,.025,.045), clamp(-rel,0.,1.)*.2*(1.-above));
-    col = over(col, vec3(.74,.94,.98), (clamp(rel,0.,1.)*.2 + sp*.5 + smoothstep(.003,.03,gl)*.05)*(1.-above));
+    float relW = dot(gwv, vec2(-.53,.85))*70.;
+    col = over(col, vec3(0.,.025,.045), (clamp(-rel,0.,1.)*.2 + clamp(-relW,0.,1.)*.2)*(1.-above));
+    col = over(col, vec3(.74,.94,.98), (clamp(rel,0.,1.)*.2 + clamp(relW,0.,1.)*.3 + sp*.5 + smoothstep(.003,.03,gl)*.05)*(1.-above));
     float bio = hero.z;
     if(bio > .01){
       float cs = 7.; vec2 pp = vec2(uv.x*vw, pageY); vec2 id = floor(pp/cs), f = fract(pp/cs);
@@ -141,7 +167,7 @@ void main(){
 
 export function createWater(canvas: HTMLCanvasElement): Water {
   const state: WaterState = { scroll: 0, heroH: 0, surf: 0, bio: 0, intro: 0, level: 0, sea: 0, impactT: -1, dropY: 2, dropOn: 0, dropStretch: 1, dissolve: 0, tintA: 1, nameA: 1 };
-  const dead: Water = { ok: false, state, drop() {}, textDirty() {}, drawName() {}, frame() {}, resize() {} };
+  const dead: Water = { ok: false, state, drop() {}, setWake() {}, textDirty() {}, drawName() {}, frame() {}, resize() {} };
   const coarse = matchMedia('(pointer: coarse)').matches;
   const gl = canvas.getContext('webgl2', { premultipliedAlpha: true, alpha: true, antialias: false, powerPreference: coarse ? 'low-power' : 'high-performance' });
   if (!gl || !gl.getExtension('EXT_color_buffer_float')) return dead;
@@ -171,6 +197,7 @@ export function createWater(canvas: HTMLCanvasElement): Water {
   const tcx = tcv.getContext('2d')!, ncx = ncv.getContext('2d')!;
   const hero = document.querySelector<HTMLElement>('.hero');
   let dirtyUntil = 0, lastScroll = 0, alive = true;
+  const wkData = new Float32Array(96), wkBox = [0, 0, 0, 0]; let wkN = 0, wkLen = 50;
 
   const params = (t: WebGLTexture) => {
     gl.bindTexture(gl.TEXTURE_2D, t);
@@ -258,15 +285,18 @@ export function createWater(canvas: HTMLCanvasElement): Water {
   }
 
   // calidad adaptativa: si los cuadros tardan, baja la resolución
-  let slow = 0, lastT = 0;
+  let slow = 0, lastT = 0, acc = 0; const STEP_MS = 1000 / 120;
   function frame(t: number) {
     if (!alive) return;
     const dt = t - lastT; lastT = t;
     if (dt > 30 && dt < 200) { if (++slow > 40 && maxDpr > 1) { maxDpr = Math.max(1, maxDpr - 0.5); slow = 0; resize(); } } else if (slow > 0) slow--;
     if (performance.now() < dirtyUntil) drawText();
-    const shift = (state.scroll - lastScroll) / vh; lastScroll = state.scroll;
-    pass(step, () => { gl.uniform2f(step.u('px'), 1 / SW, 1 / SH); gl.uniform1f(step.u('shift'), shift); });
-    pass(step, () => { gl.uniform2f(step.u('px'), 1 / SW, 1 / SH); gl.uniform1f(step.u('shift'), 0); });
+    // paso fijo: 120 pasos de simulación por segundo, sin importar a cuántos cuadros vaya la pantalla
+    acc += Math.min(140, Math.max(0, dt)); let n = Math.floor(acc / STEP_MS); acc -= n * STEP_MS; n = Math.min(n, 16);
+    if (n > 0) {
+      const shift = (state.scroll - lastScroll) / vh; lastScroll = state.scroll;
+      for (let i = 0; i < n; i++) pass(step, () => { gl.uniform2f(step.u('px'), 1 / SW, 1 / SH); gl.uniform1f(step.u('shift'), i ? 0 : shift); });
+    }
     gl.useProgram(show.P); gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, W, H);
     gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tex[cur]); gl.uniform1i(show.u('s'), 0);
@@ -278,6 +308,7 @@ export function createWater(canvas: HTMLCanvasElement): Water {
     gl.uniform4f(show.u('intro'), state.intro, state.level, state.sea, state.impactT);
     gl.uniform4f(show.u('intro2'), state.dropY, state.dropOn, state.dissolve, state.tintA);
     gl.uniform2f(show.u('intro3'), state.dropStretch, state.nameA);
+    gl.uniform4fv(show.u('wk'), wkData); gl.uniform4f(show.u('wkp'), wkN, W / vw, wkLen, 0); gl.uniform4f(show.u('wkb'), wkBox[0], wkBox[1], wkBox[2], wkBox[3]);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
 
@@ -289,6 +320,12 @@ export function createWater(canvas: HTMLCanvasElement): Water {
 
   return {
     ok: true, state, drop: addDrop, drawName, frame, resize,
+    setWake(data, n, len) {
+      wkN = Math.min(24, n); wkLen = len; if (wkN < 2) { wkN = 0; return; }
+      wkData.set(data.subarray(0, wkN * 4));
+      let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (let i = 0; i < wkN; i++) { const x = data[i * 4], y = data[i * 4 + 1]; x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
+      const m = len * 1.7; wkBox[0] = x0 - m; wkBox[1] = y0 - m; wkBox[2] = x1 + m; wkBox[3] = y1 + m;
+    },
     textDirty(ms = 260) { dirtyUntil = Math.max(dirtyUntil, performance.now() + ms); },
   };
 }

@@ -54,6 +54,7 @@ img, video, canvas, svg { display: block; max-width: 100%; }
 
 /* ---------- capas fijas ---------- */
 #gl, #whale { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+#whale { z-index: 30; }   /* la ballena nada por encima de imágenes, tarjetas y pases */
 main { position: relative; }
 section, footer { position: relative; }
 .wrap { position: relative; z-index: 2; width: 100%; max-width: 1560px; margin: 0 auto; padding-left: max(var(--gut), env(safe-area-inset-left, 0px)); padding-right: max(var(--gut), env(safe-area-inset-right, 0px)); }
@@ -106,8 +107,9 @@ html.menu-open .menu { clip-path: inset(0); visibility: visible; transition: cli
 
 /* ---------- medidor de profundidad ---------- */
 .meter { position: fixed; right: max(var(--gut), env(safe-area-inset-right, 0px)); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); z-index: 40; display: flex; align-items: baseline; gap: 12px; mix-blend-mode: difference; color: #fff; pointer-events: none; text-align: right; font-family: var(--mono); transition: opacity .5s; }
-.meter-m { display: block; font-size: 17px; font-weight: 300; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
-.meter-z { display: block; order: -1; font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; opacity: .8; }
+.meter-m i { font-style: normal; opacity: .32; }
+.meter-m { display: block; white-space: nowrap; font-size: 17px; font-weight: 300; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.meter-z { display: block; order: -1; width: calc(16ch + 1.6em); white-space: nowrap; font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; opacity: .8; }
 .meter-bar { display: block; order: -2; align-self: center; width: 64px; height: 1px; background: rgba(255, 255, 255, .3); position: relative; }
 .meter-bar b { position: absolute; top: -3px; left: 0; width: 1px; height: 7px; background: #fff; }
 html[data-end="1"] .meter { opacity: 0; }
@@ -121,15 +123,16 @@ html[data-end="1"] .meter { opacity: 0; }
 @keyframes sound-bar { to { height: 10px; } }
 html.intro .sound, html[data-end="1"] .sound { opacity: 0; pointer-events: none; }
 
-/* ---------- cursor ---------- */
-.cur-dot, .cur-ring { position: fixed; left: 0; top: 0; z-index: 200; pointer-events: none; mix-blend-mode: difference; opacity: 0; transition: opacity .3s; }
-html.has-cursor .cur-dot, html.has-cursor .cur-ring { opacity: 1; }
-.cur-dot { width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: #fff; }
-.cur-ring { width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%; border: 1px solid #fff; display: grid; place-items: center; transition: opacity .3s, width .45s var(--ease), height .45s var(--ease), margin .45s var(--ease), background .3s; }
-.cur-ring[data-hot="1"] { width: 58px; height: 58px; margin: -29px 0 0 -29px; }
-.cur-ring[data-hot="2"] { width: 112px; height: 112px; margin: -56px 0 0 -56px; background: #fff; }
-.cur-label { font: 500 9.5px/1.2 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: #000; text-align: center; max-width: 86px; opacity: 0; transition: opacity .2s; }
-.cur-ring[data-hot="2"] .cur-label { opacity: 1; }
+/* ---------- cursor ----------
+   Una cruz de posición, como la marca de un punto en una carta náutica. Sobre algo clicable se abre en mira. */
+.cur { position: fixed; left: 0; top: 0; z-index: 200; pointer-events: none; mix-blend-mode: difference; color: #fff; opacity: 0; transition: opacity .3s; }
+html.has-cursor .cur { opacity: 1; }
+.cur i { position: absolute; left: 0; top: 0; width: 17px; height: 17px; margin: -8.5px 0 0 -8.5px; transition: width .32s var(--ease), height .32s var(--ease), margin .32s var(--ease), transform .2s var(--ease);
+  background: linear-gradient(currentColor, currentColor) center / 100% 1px no-repeat, linear-gradient(currentColor, currentColor) center / 1px 100% no-repeat; }
+.cur[data-hot="1"] i, .cur[data-hot="2"] i { width: 31px; height: 31px; margin: -15.5px 0 0 -15.5px; -webkit-mask: radial-gradient(circle, transparent 0 7px, #000 7.5px); mask: radial-gradient(circle, transparent 0 7px, #000 7.5px); }
+.cur[data-down="1"] i { transform: scale(.7) rotate(45deg); }
+.cur-label { position: absolute; left: 22px; top: 14px; white-space: nowrap; font: 500 10px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; opacity: 0; transition: opacity .2s; }
+.cur[data-hot="2"] .cur-label { opacity: 1; }
 html.has-cursor, html.has-cursor a, html.has-cursor button { cursor: none; }
 
 /* ---------- intro ---------- */
@@ -334,7 +337,7 @@ html.arriving .curtain { visibility: visible; }
   .pk-grid { grid-template-columns: minmax(0, 1fr); max-width: 360px; }
   .pass { transform: none; }
 }
-@media (hover: none) { .cur-dot, .cur-ring { display: none; } }
+@media (hover: none) { .cur { display: none; } }
 @media (prefers-reduced-motion: reduce) {
   .wk-stage { height: auto; overflow: visible; display: block; padding: 90px 0 30px; }
   .wk-title { position: static; transform: none; white-space: normal; flex-wrap: wrap; justify-content: flex-start; margin-bottom: 40px; }

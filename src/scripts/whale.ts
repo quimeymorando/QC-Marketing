@@ -1,76 +1,105 @@
 // La ballena: un dibujo 2D en línea (como el logo) que sale del logo y baja nadando con el scroll.
-// - El cuerpo es una cadena de puntos que sigue una ruta ligada al scroll, con vueltas completas.
-// - Bate la cola, rema con las aletas, gira sobre sí misma en las vueltas y se acerca curiosa al cursor.
+// - Cruza la página de lado a lado. En el portfolio se queda a la izquierda; no entra al pie de página.
+// - El cuerpo es una cadena que sigue a la cabeza (por eso no se deforma en las curvas ni al frenar).
+// - Bate la cola, rema con las aletas, gira sobre su eje en algunos tramos y cuando la tocan.
 // - Al nadar empuja la simulación de agua: la estela son ondas reales, no un dibujo.
 import type { Water } from './water';
 import type { Waterline } from './waterline';
 
 const PROFILE: [number, number][] = [[0, 0.03], [0.04, 0.072], [0.1, 0.104], [0.2, 0.122], [0.32, 0.126], [0.45, 0.11], [0.6, 0.08], [0.75, 0.05], [0.88, 0.027], [0.96, 0.017], [1, 0.015]];
 const widthAt = (s: number) => { for (let i = 0; i < PROFILE.length - 1; i++) { const [a, wa] = PROFILE[i], [b, wb] = PROFILE[i + 1]; if (s <= b) { const t = (s - a) / (b - a), e = t * t * (3 - 2 * t); return wa + (wb - wa) * e; } } return 0.015; };
+const WAKE_MS = 3200;
 const INK = '4,7,11', FOAM = '242,246,247';
+const sm = (a: number, b: number, x: number) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 
 export function createWhale(canvas: HTMLCanvasElement, water: Water | null, line: Waterline | null, onPoke: () => void = () => {}) {
   const ctx = canvas.getContext('2d')!;
-  const K = 26;
-  let vw = 1, vh = 1, dpr = 1, L = 100, u = 0, phase = 0, prev: { x: number; y: number } | null = null, lastSide = 0;
+  const K = 26, MAXA = 0.17;
+  let vw = 1, vh = 1, dpr = 1, L = 50, u = 0, phase = 0, lastT = 0, lastSide = 0, nextMeasure = 0;
   let cx = 0, cy = 0, spinAt = -1e9, body = { x: -999, y: -999 };
-  let tail: { x: number; y: number } | null = null, trail = 0;
-  const logo = document.querySelector<HTMLElement>('.nav-logo svg');
+  let chain: { x: number; y: number }[] | null = null, tail: { x: number; y: number } | null = null, run = 0;
+  const hist: { x: number; y: number; t: number; s: number }[] = [], wk = new Float32Array(96);
+  let pf0 = 1e9, pf1 = 1e9, footY = 1e9, tk0 = 1e9, tk1 = -1e9;
+  const logo = document.querySelector<HTMLElement>('.nav-logo svg'), stage = document.querySelector<HTMLElement>('.wk-stage');
+  const foot = document.querySelector<HTMLElement>('footer.foot'), passBox = document.querySelector<HTMLElement>('#pases');
+  const passes = Array.from(document.querySelectorAll<HTMLElement>('.pass'));
   let lx = 60, ly = 36;
 
+  // dónde empiezan el portfolio, los pases y el pie (en coordenadas de página)
+  function measure() {
+    const sy = scrollY;
+    if (logo && sy < 40) { const r = logo.getBoundingClientRect(); if (r.width) { lx = r.left + r.width / 2; ly = r.top + r.height / 2; } }
+    if (stage) { const sp = stage.parentElement?.classList.contains('pin-spacer') ? stage.parentElement : stage; pf0 = sp.getBoundingClientRect().top + sy; pf1 = pf0 + Math.max(0, sp.offsetHeight - vh); }
+    if (foot) footY = foot.getBoundingClientRect().top + sy;
+    if (passBox) { const r = passBox.getBoundingClientRect(); tk0 = r.top + sy - vh; tk1 = r.bottom + sy; }
+  }
   function resize() {
     vw = innerWidth; vh = innerHeight; dpr = Math.min(2, devicePixelRatio || 1);
     canvas.width = Math.round(vw * dpr); canvas.height = Math.round(vh * dpr);
-    L = Math.min(82, Math.max(54, vw * 0.052));
-    if (logo) { const r = logo.getBoundingClientRect(); lx = r.left + r.width / 2; ly = r.top + r.height / 2 + scrollY; }
+    L = Math.min(60, Math.max(40, vw * 0.037));
+    measure();
   }
   const maxS = () => Math.max(1, document.documentElement.scrollHeight - vh);
-  // ruta en coordenadas de página; roll = giro sobre su eje (0..1 = una vuelta completa)
+  // ruta de la cabeza en coordenadas de página; roll = giro sobre su eje (0..1 = una vuelta completa)
   function route(s: number) {
-    const k = Math.min(1, Math.max(0, s / 560)), e = k * k * (3 - 2 * k);
-    const end = Math.min(1, Math.max(0, (maxS() - s) / 700));
-    const mid = vw < 760 ? 0.62 : 0.7, side = vw < 760 ? 0.24 : 0.19;
-    const xr = vw * (mid + side * Math.sin(s / 940 + 0.9) + 0.05 * Math.sin(s / 310 + 2)) * end + vw * 0.74 * (1 - end);
-    const yr = s + vh * (0.52 + 0.16 * Math.sin(s / 1270 + 0.4)) * end + vh * 0.42 * (1 - end);
-    let ox = 0, oy = 0, roll = 0; const M = maxS();
-    for (const [c, dir] of [[0.2, 1], [0.47, -1], [0.78, 1]] as const) {
-      const w = 760, k2 = (s - (c * M - w / 2)) / w;
-      if (k2 > 0 && k2 < 1) { const q = k2 * k2 * (3 - 2 * k2), th = q * Math.PI * 2, R = Math.min(vw, vh) * 0.13; ox += dir * R * Math.sin(th); oy += -R * (1 - Math.cos(th)); roll = q * dir; }
-    }
-    return { x: lx + (xr + ox - lx) * e, y: ly + s * (1 - e) + (yr + oy - (ly + s * (1 - e))) * e, e, roll };
+    const e = sm(0, 560, s), narrow = vw < 760;
+    // barrido: cruza la pantalla de un lado al otro cada pantalla y un poco
+    const W = vh * 0.42, A = narrow ? 0.3 : 0.37;
+    let xr = vw * (0.5 + A * Math.sin((s - 300) / W - Math.PI / 2));
+    let yr = s + vh * (0.5 + 0.17 * Math.sin(s / 1270 + 0.4));
+    // portfolio: se va al costado izquierdo y se queda ahí
+    const w = sm(pf0 - vh * 0.9, pf0 - vh * 0.05, s) * (1 - sm(pf1 + vh * 0.05, pf1 + vh * 0.8, s));
+    if (w > 0) { xr += (vw * (narrow ? 0.07 : 0.085) + vw * 0.012 * Math.sin(s / 240) - xr) * w; yr += (s + vh * (0.5 + 0.2 * Math.sin(s / 620)) - yr) * w; }
+    // pie de página: no entra. Se queda en la sección anterior y la página la deja atrás.
+    const o = yr - (footY - vh * 0.36); yr -= o < -200 ? 0 : o > 200 ? o : ((o + 200) * (o + 200)) / 800;
+    let roll = 0; const M = maxS();
+    for (const c of [0.17, 0.43, 0.69]) { const k2 = (s - (c * M - 280)) / 560; if (k2 > 0 && k2 < 1) roll = k2 * k2 * (3 - 2 * k2); }
+    const y0 = ly + s;   // el logo está fijo arriba: su posición de página acompaña al scroll
+    return { x: lx + (xr - lx) * e, y: y0 + (yr - y0) * e, e, roll };
   }
 
   /** El cursor tocó la pantalla: si fue sobre la ballena, da una vuelta sobre sí misma. */
   function poke(x: number, y: number) {
-    if (Math.hypot(x - body.x, y - body.y) > L * 0.75) return false;
+    if (Math.hypot(x - body.x, y - body.y) > Math.max(46, L * 0.9)) return false;
     spinAt = performance.now(); water?.drop(body.x, body.y, 0.07, 0.05); onPoke(); return true;
   }
 
   function frame(t: number, scroll: number, active: boolean, pointer: [number, number] | null) {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, vw, vh);
-    if (!active) { u = scroll; prev = null; tail = null; return; }
-    u += (scroll - u) * 0.085;
-    const head = route(u), scale = 0.12 + 0.88 * head.e;
-    if (u < 3) { prev = null; tail = null; body = { x: -999, y: -999 }; return; }
-    const pts: { x: number; y: number }[] = []; let uu = u; const seg = (L * scale) / (K - 1);
-    for (let i = 0; i < K; i++) { const p = route(uu); pts.push({ x: p.x, y: p.y }); const q = route(uu - 4), sp = Math.hypot(p.x - q.x, p.y - q.y) / 4 || 1; uu -= seg / sp; }
-    const moved = prev ? Math.hypot(pts[0].x - prev.x, pts[0].y - prev.y) : 0;
-    phase += 0.035 + Math.min(0.5, moved * 0.07);
-    // curiosidad: se arrima al cursor cuando está cerca. Deriva lenta cuando la página está quieta.
-    let tx0 = Math.sin(t * 0.0011) * 5, ty0 = Math.cos(t * 0.0009) * 4;
-    if (pointer && head.e > 0.9) { const dx = pointer[0] - pts[0].x, dy = pointer[1] - (pts[0].y - scroll), d = Math.hypot(dx, dy); if (d < 430 && d > 1) { const m = Math.min(66, d * 0.2); tx0 += (dx / d) * m; ty0 += (dy / d) * m; } }
-    cx += (tx0 - cx) * 0.045; cy += (ty0 - cy) * 0.045;
+    const f = lastT ? Math.min(6, (t - lastT) / 16.667) : 1; lastT = t;   // mismo movimiento a 60 Hz, 120 Hz o con cuadros lentos
+    if (t > nextMeasure) { measure(); nextMeasure = t + 1500; }
+    if (!active) { u = scroll; chain = null; tail = null; hist.length = 0; water?.setWake(wk, 0, L); return; }
+    u += (scroll - u) * (1 - Math.pow(0.915, f));
+    const lag = vh * 0.28; u = Math.min(scroll + lag, Math.max(scroll - lag, u));   // nunca queda tan atrás como para pegar un salto al alcanzarte
+    const head = route(u), scale = 0.12 + 0.88 * head.e, LL = L * scale, seg = LL / (K - 1);
+    if (u < 3) { chain = null; tail = null; hist.length = 0; water?.setWake(wk, 0, L); body = { x: -999, y: -999 }; return; }
+    if (!chain) chain = Array.from({ length: K }, (_, i) => ({ x: head.x - i * seg * 0.45, y: head.y - i * seg * 0.89 }));
+    const moved = Math.hypot(head.x - chain[0].x, head.y - chain[0].y) / f;
+    // cadena: cada punto sigue al anterior a distancia fija, con un límite de curvatura (un cuerpo no se dobla en ángulo)
+    chain[0].x = head.x; chain[0].y = head.y;
+    let pdx = 0, pdy = 0;
+    for (let i = 1; i < K; i++) {
+      let dx = chain[i].x - chain[i - 1].x, dy = chain[i].y - chain[i - 1].y; const m = Math.hypot(dx, dy) || 1; dx /= m; dy /= m;
+      if (i > 1) { const a = Math.atan2(pdx * dy - pdy * dx, pdx * dx + pdy * dy); if (Math.abs(a) > MAXA) { const r = Math.sign(a) * MAXA, c = Math.cos(r), sn = Math.sin(r); dx = pdx * c - pdy * sn; dy = pdx * sn + pdy * c; } }
+      chain[i].x = chain[i - 1].x + dx * seg; chain[i].y = chain[i - 1].y + dy * seg; pdx = dx; pdy = dy;
+    }
+    phase += (0.035 + Math.min(0.5, moved * 0.07)) * f;
+    // curiosidad: se arrima entera al cursor cuando está cerca (sin estirarse) y lo ignora cuando lo tiene encima
+    let tx0 = Math.sin(t * 0.0011) * 4, ty0 = Math.cos(t * 0.0009) * 3;
+    if (pointer && head.e > 0.9) { const dx = pointer[0] - (chain[8].x + cx), dy = pointer[1] - (chain[8].y - scroll + cy), d = Math.hypot(dx, dy); if (d < 420 && d > 1) { const m = Math.min(34, Math.max(0, d - L * 1.8) * 0.16); tx0 += (dx / d) * m; ty0 += (dy / d) * m; } }
+    const kf = 1 - Math.pow(0.96, f); cx += (tx0 - cx) * kf; cy += (ty0 - cy) * kf;
 
+    const pts = chain;
     const P = pts.map((p, i) => {
       const a = pts[Math.max(0, i - 1)], b = pts[Math.min(K - 1, i + 1)]; let tx = a.x - b.x, ty = a.y - b.y; const m = Math.hypot(tx, ty) || 1; tx /= m; ty /= m;
-      const s = i / (K - 1), amp = L * scale * (0.01 + 0.085 * s * s) * Math.sin(phase - s * 3.2), fol = 1 - s * 0.35;
-      return { x: p.x - ty * amp + cx * fol, y: p.y + tx * amp - scroll + cy * fol, tx, ty, s };
+      const s = i / (K - 1), amp = LL * (0.01 + 0.085 * s * s) * Math.sin(phase - s * 3.2);
+      return { x: p.x - ty * amp + cx, y: p.y + tx * amp - scroll + cy, tx, ty, s };
     });
     for (let i = 0; i < K; i++) { const a = P[Math.max(0, i - 1)], b = P[Math.min(K - 1, i + 1)]; const m = Math.hypot(a.x - b.x, a.y - b.y) || 1; P[i].tx = (a.x - b.x) / m; P[i].ty = (a.y - b.y) / m; }
-    const LL = L * scale;
     body = { x: P[Math.round(K * 0.4)].x, y: P[Math.round(K * 0.4)].y };
+    if (body.y < -LL * 1.5 || body.y > vh + LL * 1.5) { tail = null; hist.length = 0; water?.setWake(wk, 0, L); return; }   // fuera de pantalla: no se dibuja ni mueve el agua
     const turn = Math.max(-1, Math.min(1, (P[2].tx * P[K - 6].ty - P[2].ty * P[K - 6].tx) * 1.6));
-    // giro sobre su eje: en las vueltas de la ruta y cuando la tocan
+    // giro sobre su eje: en algunos tramos de la ruta y cuando la tocan
     const sp = (t - spinAt) / 1100, spin = sp > 0 && sp < 1 ? sp * sp * (3 - 2 * sp) : 0;
     const rollA = (head.roll + spin) * Math.PI * 2, rc = Math.cos(rollA), belly = rc < 0;
 
@@ -117,44 +146,58 @@ export function createWhale(canvas: HTMLCanvasElement, water: Water | null, line
 
     const surfY = line ? line.yAt(P[0].x) - scroll : -1e6;
 
-    // ---- cuerpo: tinta sobre el agua, espuma debajo ----
-    const draw = (rgb: string, y0: number, y1: number) => {
-      if (y1 <= y0) return;
-      ctx.save(); ctx.beginPath(); ctx.rect(0, y0, vw, y1 - y0); ctx.clip();
+    // ---- cuerpo: tinta sobre el agua y sobre el papel de los pases, espuma en el resto ----
+    const draw = (rgb: string, x0: number, y0: number, x1: number, y1: number, wipe = false) => {
+      if (y1 <= y0 || x1 <= x0) return;
+      ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, x1 - x0, y1 - y0); ctx.clip();
+      if (wipe) ctx.clearRect(x0, y0, x1 - x0, y1 - y0);
       ctx.fillStyle = `rgba(${rgb === INK ? '14,52,72' : rgb},${belly ? 0.26 : 0.13})`; ctx.fill(shape);
-      ctx.strokeStyle = `rgba(${rgb},.94)`; ctx.lineJoin = 'round'; ctx.lineWidth = Math.max(1, LL * 0.011); ctx.stroke(shape);
-      ctx.globalAlpha = 0.5; ctx.lineWidth = Math.max(0.75, LL * 0.007); ctx.stroke(detail);
+      ctx.strokeStyle = `rgba(${rgb},.94)`; ctx.lineJoin = 'round'; ctx.lineWidth = Math.max(1, LL * 0.013); ctx.stroke(shape);
+      ctx.globalAlpha = 0.5; ctx.lineWidth = Math.max(0.75, LL * 0.008); ctx.stroke(detail);
       ctx.restore();
     };
-    draw(INK, 0, Math.min(vh, surfY)); draw(FOAM, Math.max(0, surfY), vh);
+    draw(INK, 0, 0, vw, Math.min(vh, surfY)); draw(FOAM, 0, Math.max(0, surfY), vw, vh);
+    if (scroll > tk0 && scroll < tk1) for (const el of passes) {
+      const r = el.getBoundingClientRect();
+      if (r.right > body.x - LL && r.left < body.x + LL && r.bottom > body.y - LL && r.top < body.y + LL) draw(INK, r.left, r.top, r.right, r.bottom, true);
+    }
 
-    // ---- salpicadura al cruzar la superficie ----
+    // ---- al cruzar la superficie mueve la línea de agua ----
     if (line) {
       const side = P[0].y > surfY ? 1 : -1;
-      if (lastSide && side !== lastSide) {
-        line.splash(P[0].x, 7 * side); water?.drop(P[0].x, surfY, 0.05, 0.04);
-      }
+      if (lastSide && side !== lastSide) { line.splash(P[0].x, 7 * side); water?.drop(P[0].x, surfY, 0.05, 0.04); }
       lastSide = side;
       const ty = T.y - surfY; if (Math.abs(ty) < 14 && moved > 0.6) line.splash(T.x, 2.6 * Math.sign(ty || 1));
     }
-    // la cola y el morro empujan el agua de verdad (ondas y plancton)
-    // estela: la cola deja un rastro continuo en la simulación de agua (ondas reales que se abren y se apagan solas).
-    // Se siembra a lo largo del camino recorrido, alternando lados como los remolinos que deja una cola al batir.
-    const tp = { x: T.x, y: T.y + scroll };
-    if (water && water.ok && head.e > 0.3 && tail) {
+
+    // ---- estela: no es un dibujo. El camino que dejó la cola se pasa al agua, que lo levanta como relieve (dos lomos en V
+    // que se abren y se apagan) con la misma luz que el resto de las ondas. Además la cola empuja la simulación: en el abismo
+    // ese movimiento enciende el plancton a su paso.
+    const end = pts[K - 1], tp = { x: end.x + cx, y: end.y + cy };   // punta de la cola, sin el vaivén del batido
+    const wet = head.e > 0.3 && T.y > surfY + 6;
+    if (wet && tail) {
       const dx = tp.x - tail.x, dy = tp.y - tail.y, d = Math.hypot(dx, dy);
-      if (d > 0.6 && d < 900) {
-        // muchas gotas chicas y seguidas: sus ondas se suman y abren sola la V que deja cualquier cosa que avanza en el agua
-        const n = Math.min(16, Math.ceil(d / 7)), ux = dx / d, uy = dy / d, power = Math.min(1, 0.3 + d * 0.045);
-        for (let i = 1; i <= n; i++) {
-          trail += d / n;
-          const beat = Math.sin(trail / (LL * 0.2)), off = beat * LL * 0.04;
-          water.drop(tail.x + (dx * i) / n - uy * off, tail.y + (dy * i) / n + ux * off - scroll, 0.012, (0.011 + 0.006 * Math.abs(beat)) * power);
-        }
+      if (d > 0.5 && d < 900) {
+        run += d;
+        if (water?.ok) { const n = Math.min(20, Math.ceil(d / 10)); for (let i = 1; i <= n; i++) water.drop(tail.x + (dx * i) / n, tail.y + (dy * i) / n - scroll, 0.016, (0.0055 * (d / n)) / 10); }
+        const last = hist[hist.length - 1];
+        if (!last || Math.hypot(tp.x - last.x, tp.y - last.y) > 12) hist.push({ x: tp.x, y: tp.y, t, s: run });
       }
     }
     tail = tp;
-    prev = { x: pts[0].x, y: pts[0].y };
+    // la estela se apaga con el tiempo (si se queda quieta) y con la distancia (si avanza rápido): así siempre se ve un tramo parecido
+    const wlen = LL * 15;
+    while (hist.length && (t - hist[0].t > WAKE_MS || run - hist[0].s > wlen || hist.length > 280)) hist.shift();
+    if (water?.ok) {
+      let n = 0;
+      if (hist.length > 1) {
+        const m = Math.min(23, hist.length);
+        for (let i = 0; i < m; i++) { const h = hist[Math.round((i * (hist.length - 1)) / (m - 1))]; wk[n * 4] = h.x; wk[n * 4 + 1] = h.y - scroll; wk[n * 4 + 2] = Math.min(1, Math.max((t - h.t) / WAKE_MS, (run - h.s) / wlen)); wk[n * 4 + 3] = h.s; n++; }
+        // la punta de la cola cierra la estela; si la ballena está quieta toma la edad del último punto (sin escalón)
+        if (wet) { const lh = hist[hist.length - 1], dl = Math.hypot(tp.x - lh.x, tp.y - lh.y); wk[n * 4] = tp.x; wk[n * 4 + 1] = tp.y - scroll; wk[n * 4 + 2] = wk[n * 4 - 2] * (1 - Math.min(1, dl / 24)); wk[n * 4 + 3] = run; n++; }
+      }
+      water.setWake(wk, n, LL);
+    }
     (window as any).__wp = [body.x, body.y];
   }
   resize();
