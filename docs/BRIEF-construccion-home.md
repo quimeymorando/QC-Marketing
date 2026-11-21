@@ -27,12 +27,19 @@ Web de **Ceto Studio**: estudio de dos personas, Quimi (sistemas, automatizacion
 - **Textos finales:** [copies/home-es.md](copies/home-es.md) (español neutro) y [copies/home-en.md](copies/home-en.md).
 - **Título del hero, provisorio:** "Lo grande pasa bajo el agua."
 - **Orden de las secciones:**
-  1. Loader con contador en metros.
+  1. **Intro y loader:** la gota que revela "Ceto Studio". Ver [diseno/intro-gota.md](diseno/intro-gota.md).
   2. Hero (superficie).
   3. Manifiesto.
   4. Cuatro zonas: superficie / Meta Ads, zona de luz / webs, crepuscular / automatizaciones, abismo / IA.
   5. "Antes de seguir bajando" (objeciones).
-  6. Portfolio con tarjetas de vidrio apiladas como en Two Halves. Contenido de ejemplo por ahora; después se conectan sus webs. Botón "Ver todo el portfolio".
+  6. **Portfolio. Réplica de la sección "Work" de Two Halves, adaptada a Ceto:**
+   - **Título gigante en dos tonos,** con un hueco entre palabras donde rebota un video chico de los trabajos.
+   - **Tarjetas de vidrio que se apilan** con el scroll. Cada una lleva captura o video del sitio, estado (En línea / 2026 / Pronto), rubro, servicios, número y nombre.
+   - **Inclinación y brillo** que siguen al mouse.
+   - **Preview de video que sigue al cursor.**
+   - En el celular, las filas se apilan.
+   - Por ahora con 5 casos de ejemplo. Cada tarjeta enlaza a `/portfolio/[caso]`.
+   - **Botón "Ver todo el portfolio →"** que lleva a **`/portfolio`.** Esa página queda creada como placeholder hasta que la diseñemos.
   7. Paquetes como **tickets de inmersión o excursión**. Nombres y precios a definir.
   8. Equipo, con un adelanto del About RPG.
   9. Cierre con bioluminiscencia.
@@ -40,10 +47,11 @@ Web de **Ceto Studio**: estudio de dos personas, Quimi (sistemas, automatizacion
 
 ## Diseño
 - **Color:** [diseno/fondos-y-color.md](diseno/fondos-y-color.md). El fondo depende de la profundidad. La superficie es blanca, el abismo casi negro con bioluminiscencia #5CFFC4 y el acento es cian #38D6E8.
-- **Tipografía:** Sprat (títulos), Ronzino (texto) y Martian Mono (sonar, medidor y tickets), en `assets/fonts/`. **Ancho fijo, sin efecto de presión.** El texto aparece letra por letra, como en Two Halves.
+- **Tipografía:** Sprat (títulos), Ronzino (texto) y Martian Mono (sonar, medidor y tickets), en `assets/fonts/`. **Ancho fijo, sin efecto de presión.**
+- **Efectos de texto por sección,** iguales a Two Halves: ver [referencias/03-twohalves-efectos-de-texto.md](referencias/03-twohalves-efectos-de-texto.md).
 - **Dirección visual y efectos:** [diseno/direccion-visual.md](diseno/direccion-visual.md).
   - El agua del cursor es el efecto firma y se mantiene. Base: [maqueta 2](diseno/maquetas/maqueta-2.html).
-  - Ballena 3D que sale del logo y deja una estela de burbujas.
+  - **Ballena dibujada en 2D** (como la grulla, no 3D) que sale del logo y deja una **estela de agua** en la simulación de ondas.
   - Plancton que destella donde el agua se agita.
   - Láminas científicas en trama, ecograma real y batimetría real.
 - **Descartado:**
@@ -53,7 +61,7 @@ Web de **Ceto Studio**: estudio de dos personas, Quimi (sistemas, automatizacion
   - la tipografía que se comprime.
 
 ## Criterio de terminado de la home (propuesto, a confirmar)
-1. Todas las secciones armadas con los textos en español.
+1. Intro de la gota funcionando y todas las secciones armadas con los textos en español.
 2. Funcionando: agua del cursor, ballena con su recorrido y estela, medidor de profundidad, texto letra por letra, cambio de color por profundidad y bioluminiscencia reactiva.
 3. Portfolio y tickets con contenido de ejemplo.
 4. Que se vea bien y fluido en el celular, con versión estática para "reducir movimiento".
@@ -62,7 +70,8 @@ Web de **Ceto Studio**: estudio de dos personas, Quimi (sistemas, automatizacion
 **Segunda vuelta:** inglés, sonido (ping de sonar ya prototipado y grabaciones de NOAA), formulario conectado a GHL y portfolio real.
 
 ## Pendientes de los dueños
-- Descargar el modelo de la ballena de Sketchfab (cuenta gratuita).
+- Dibujo de la ballena: Cori, o una versión provisoria hasta que esté.
+- Logo (de él sale la ballena).
 - Confirmar el título del hero.
 - Nombres y precios de los paquetes.
 - Lista de webs para el portfolio.

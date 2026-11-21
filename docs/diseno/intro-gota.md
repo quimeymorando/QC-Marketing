@@ -25,16 +25,27 @@ Idea de Cori: antes de la home, una gota cae al agua. El agua sube y, a medida q
 - **Sonido:** los navegadores no dejan reproducir sonido antes de que la persona toque algo. **La gota no puede sonar en la intro.** El sonido va con el botón de sonido.
 - **Celular:** la misma intro, con el nombre en dos líneas ("Ceto" / "Studio").
 
-## Decisiones abiertas
-1. **Color del agua en la intro:**
-   - **(a) Azul petróleo oscuro con el nombre en blanco:** mucho contraste y ya anticipa el fondo del mar.
-   - **(b) Agua transparente con un tinte cian y el nombre en tinta casi negra:** más fiel a la taza térmica y más sutil.
-2. **Salida del nombre:**
-   - **(a) Se disuelve como tinta y el agua baja (recomendado):** queda la línea de agua del hero.
-   - **(b) El agua baja y se lleva el nombre** sin disolverlo.
-   - **(c) La cámara se sumerge** y el hero aparece debajo.
-3. **¿La gota sale del logo?** Cuando exista el logo, la gota puede caer desde su posición, o el logo mismo puede ser la gota.
-4. **Duración:** ~3,5 s, más lo que tarde en cargar en conexiones lentas, con un máximo de ~5 s.
+## Decisiones (21/11)
+- **Fondo:** blanco espuma `#F2F6F7`, el mismo del hero.
+- **Nombre:** "Ceto Studio" en **azul petróleo `#0E3448`**. El cian `#38D6E8` no se lee bien sobre blanco, así que queda para los reflejos del agua.
+- **Agua:** transparente con un tinte cian suave. El nombre aparece en azul donde llega el agua.
+- **La gota:** cae **por el centro de la pantalla** y tiene que verse claramente:
+  - grande;
+  - con borde y brillo especular, para que se lea sobre el blanco;
+  - un poco de color cian;
+  - una sombra suave en el punto de impacto;
+  - caída levemente en cámara lenta.
+- **Salida:** opción (a). El nombre se disuelve como tinta y el agua baja hasta quedar como la línea de agua del hero.
+- **Duración:** ~3,5 s, para probar.
+- **Cuándo aparece:** en cada **carga completa de la página**, no en la navegación interna entre secciones.
+- **Video o código:** se hace con **código en tiempo real**:
+  - es más liviano;
+  - se ve nítido en cualquier pantalla;
+  - usa la misma agua del cursor;
+  - puede seguir la carga real;
+  - se puede saltar.
+
+  Si en la prueba la gota no se entiende, el plan B es un video corto renderizado de la gota (Blender) solo para la caída, y el resto en código.
 
 ## Técnica
 - **Agua y ondas:** la misma simulación WebGL del cursor.
