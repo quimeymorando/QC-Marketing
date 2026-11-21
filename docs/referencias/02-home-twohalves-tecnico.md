@@ -163,3 +163,10 @@ El nombre gigante, a 15.6vw, se escribe letra por letra. Muestra un reloj con la
 - **Paquetes:** tickets de buceo o excursión ("pase de inmersión"), nombres y precios a definir.
 - **Portfolio:** estética de las tarjetas de vidrio apiladas de Two Halves; la sección se construye con contenido de ejemplo y después se conectan sus webs.
 - **Pendiente:** tipografías, nombres/precios de paquetes, título del hero.
+
+## Decisiones de diseño (21/11/2026, tarde)
+- **Tipografía:** combinación A (Sprat + Ronzino + Martian Mono). **Sin** el efecto de compresión por presión: la Sprat queda fija.
+- **Efecto de texto:** como en Two Halves, con aparición letra por letra (tipo máquina de escribir / lectura de sonar) en lugar de la deformación por ancho.
+- **Se mantiene:** el agua que reacciona al cursor y refracta el texto (gustó mucho).
+- **Se descarta por básico/"IA":** la transición actual al bajar al mar, los rayos de luz con degradado, la nieve marina como puntitos y la bioluminiscencia como círculos con glow. Se buscan alternativas con fundamento real (material documental, ilustración científica, estética de instrumentos, dithering, física real).
+- **Próximo paso:** análisis de recursos → construcción real con Fable (sin más maquetas intermedias).
