@@ -9,7 +9,7 @@ Lo que se mantiene igual en todas las páginas (para que siga pareciendo una sol
 
 | Sección | Referencia | Qué tomamos como punto de partida | Estado |
 |---|---|---|---|
-| Home | [twohalves.co](https://twohalves.co/) | Estructura narrativa de scroll, hero dividido, objeto guía que recorre la página, stack de casos, cierre con wordmark gigante | En análisis → [01-home-twohalves.md](01-home-twohalves.md) |
+| Home | [twohalves.co](https://twohalves.co/) | Estructura narrativa de scroll, objeto guía que recorre la página (en QC: la ballena), stack de casos, cierre con wordmark gigante | Analizada → [visual](01-home-twohalves.md) · [técnico](02-home-twohalves-tecnico.md) |
 | IA | [recurziv.com](https://recurziv.com/) | Estética sci-fi oscura, rostro 3D en malla de puntos, asistente de IA con voz como guía de la página | Pendiente |
 | Portfolio | [skhiladze.com](https://skhiladze.com/) | Portfolio minimal oscuro, un proyecto por pantalla con video/mockup central, navegación tipo slider | Pendiente |
 | Servicios | [bitwip.fr/en](https://www.bitwip.fr/en) | Tipografía display gruesa con imagen incrustada en el titular, contadores, bloques claros/oscuros alternados, acento naranja | Pendiente |
