@@ -162,5 +162,4 @@ El nombre gigante, a 15.6vw, se escribe letra por letra. Muestra un reloj con la
 - **Idiomas:** español neutro latinoamericano + inglés. Público de la home: negocios de servicios y profesionales; agencias en página aparte.
 - **Paquetes:** tickets de buceo o excursión ("pase de inmersión"), nombres y precios a definir.
 - **Portfolio:** estética de las tarjetas de vidrio apiladas de Two Halves; la sección se construye con contenido de ejemplo y después se conectan sus webs.
-- **Portfolio:** sus webs publicadas.
 - **Pendiente:** tipografías, nombres/precios de paquetes, título del hero.
