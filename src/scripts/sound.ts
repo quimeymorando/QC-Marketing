@@ -45,6 +45,29 @@ export function initSound(getDepth: () => number) {
     g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0008, t + 1.5);
     o.connect(g); g.connect(master); g.connect(wet); o.start(t); o.stop(t + 1.6);
   }
+  // gota que toca el mar: un tono que sube muy rápido (el "plip") con un cuerpo grave debajo
+  function drip() {
+    if (!ctx || !on) return;
+    const t = ctx.currentTime + 0.01;
+    const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sine';
+    o.frequency.setValueAtTime(380, t); o.frequency.exponentialRampToValueAtTime(1650, t + 0.075);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.55, t + 0.006); g.gain.exponentialRampToValueAtTime(0.0008, t + 0.2);
+    o.connect(g); g.connect(master); g.connect(wet); o.start(t); o.stop(t + 0.25);
+    const o2 = ctx.createOscillator(), g2 = ctx.createGain(); o2.type = 'sine';
+    o2.frequency.setValueAtTime(210, t); o2.frequency.exponentialRampToValueAtTime(82, t + 0.3);
+    g2.gain.setValueAtTime(0.0001, t); g2.gain.exponentialRampToValueAtTime(0.4, t + 0.012); g2.gain.exponentialRampToValueAtTime(0.0008, t + 0.42);
+    o2.connect(g2); g2.connect(master); o2.start(t); o2.stop(t + 0.5);
+  }
+  // agua que sube: ruido filtrado que crece, pasa por encima y queda sordo, como al hundir la cabeza
+  function swell(dur = 2.2) {
+    if (!ctx || !on) return;
+    const t = ctx.currentTime, len = Math.ceil(ctx.sampleRate * (dur + 0.6)), buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    const src = ctx.createBufferSource(); src.buffer = buf; const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.Q.value = 0.8;
+    f.frequency.setValueAtTime(260, t); f.frequency.exponentialRampToValueAtTime(1900, t + dur * 0.55); f.frequency.exponentialRampToValueAtTime(320, t + dur + 0.5);
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.17, t + dur * 0.5); g.gain.exponentialRampToValueAtTime(0.0008, t + dur + 0.55);
+    src.connect(f); f.connect(g); g.connect(master); src.start(t);
+  }
   function set(v: boolean) {
     on = v;
     if (v && !ctx) build();
@@ -55,5 +78,5 @@ export function initSound(getDepth: () => number) {
   }
   btns.forEach((b) => b.addEventListener('click', () => set(!on)));
   document.addEventListener('visibilitychange', () => { if (ctx && on) master.gain.setTargetAtTime(document.hidden ? 0 : 1, ctx.currentTime, 0.2); });
-  return { ping, song, set, get on() { return on; } };
+  return { ping, song, drip, swell, set, get on() { return on; } };
 }

@@ -16,7 +16,7 @@ export type Water = {
   /** Camino reciente de la cola: n puntos (x, y en pantalla, edad 0..1, distancia) y el largo de la ballena. */
   setWake(data: Float32Array, n: number, len: number, strength?: number): void;
   textDirty(ms?: number): void;
-  drawName(): void;
+  drawName(): { fs: number; top: number };
   frame(t: number): void;
   resize(): void;
 };
@@ -173,7 +173,7 @@ void main(){
 
 export function createWater(canvas: HTMLCanvasElement): Water {
   const state: WaterState = { scroll: 0, heroH: 0, surf: 0, bio: 0, intro: 0, level: 0, sea: 0, impactT: -1, dropY: 2, dropOn: 0, dropStretch: 1, dissolve: 0, tintA: 1, nameA: 1 };
-  const dead: Water = { ok: false, state, drop() {}, setWake() {}, textDirty() {}, drawName() {}, frame() {}, resize() {} };
+  const dead: Water = { ok: false, state, drop() {}, setWake() {}, textDirty() {}, drawName() { return { fs: 0, top: 0 }; }, frame() {}, resize() {} };
   const coarse = matchMedia('(pointer: coarse)').matches;
   const gl = canvas.getContext('webgl2', { premultipliedAlpha: true, alpha: true, antialias: false, powerPreference: coarse ? 'low-power' : 'high-performance' });
   if (!gl || !gl.getExtension('EXT_color_buffer_float')) return dead;
@@ -277,6 +277,7 @@ export function createWater(canvas: HTMLCanvasElement): Water {
     const lh = fs * 0.92, y0 = vh * 0.5 - ((lines.length - 1) * lh) / 2 + fs * 0.3;
     lines.forEach((l, i) => ncx.fillText(l, vw / 2, y0 + i * lh));
     upload(ntex, ncv);
+    return { fs, top: y0 - fs * 0.7 };   // tamaño y borde superior del nombre, para ubicar el logo encima
   }
 
   function pass(prog: any, set: () => void, shift = 0) {
@@ -291,12 +292,16 @@ export function createWater(canvas: HTMLCanvasElement): Water {
   }
 
   // calidad adaptativa: si los cuadros tardan, baja la resolución
-  let slow = 0, lastT = 0, acc = 0; const STEP_MS = 1000 / 120;
+  let slow = 0, lastT = 0, acc = 0, textPending = false; const STEP_MS = 1000 / 120;
   function frame(t: number) {
     if (!alive) return;
     const dt = t - lastT; lastT = t;
-    if (dt > 30 && dt < 200) { if (++slow > 40 && maxDpr > 1) { maxDpr = Math.max(1, maxDpr - 0.5); slow = 0; resize(); } } else if (slow > 0) slow--;
-    if (performance.now() < dirtyUntil) drawText();
+    // solo baja la resolución si la pantalla va lenta de forma sostenida, y nunca mientras se escribe el título o corre la intro
+    // (redibujar el texto es lo que tarda; bajar la calidad ahí hacía parpadear la tipografía)
+    const busy = state.intro > 0 || performance.now() < dirtyUntil + 600;
+    if (!busy) { if (dt > 36 && dt < 200) { if (++slow > 80 && maxDpr > 1) { maxDpr = Math.max(1, maxDpr - 0.5); slow = 0; resize(); } } else if (slow > 0) slow = Math.max(0, slow - 2); }
+    // el texto se redibuja siempre al menos una vez después del último cambio (aunque el cuadro llegue tarde): así nunca queda una letra sin aparecer
+    if (textPending || performance.now() < dirtyUntil) { drawText(); textPending = false; }
     // paso fijo: 120 pasos de simulación por segundo, sin importar a cuántos cuadros vaya la pantalla
     acc += Math.min(140, Math.max(0, dt)); let n = Math.floor(acc / STEP_MS); acc -= n * STEP_MS; n = Math.min(n, 16);
     if (n > 0) {
@@ -332,6 +337,6 @@ export function createWater(canvas: HTMLCanvasElement): Water {
       let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (let i = 0; i < wkN; i++) { const x = data[i * 4], y = data[i * 4 + 1]; x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
       const m = len * 2.2; wkBox[0] = x0 - m; wkBox[1] = y0 - m; wkBox[2] = x1 + m; wkBox[3] = y1 + m;
     },
-    textDirty(ms = 260) { dirtyUntil = Math.max(dirtyUntil, performance.now() + ms); },
+    textDirty(ms = 170) { textPending = true; dirtyUntil = Math.max(dirtyUntil, performance.now() + ms); },
   };
 }

@@ -3,6 +3,7 @@ import Base from '../layouts/Base.astro';
 import Logo from '../components/Logo.astro';
 import Mock from '../components/Mock.astro';
 import { zones, objections, work, passes, team } from '../data/home';
+import logo from '../data/logo.json';
 import fs from 'node:fs';
 import path from 'node:path';
 // Material real (dominio público): láminas históricas en trama de 1 bit, video y ecograma de NOAA.
@@ -15,6 +16,9 @@ const zoneMedia: Record<string, { plates?: number[]; clip?: string }> = { superf
 ---
 <Base page="home" depth={0}>
   <main>
+    <svg class="intro-logo" viewBox={logo.viewBox} fill="none" stroke="currentColor" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      {logo.strokes.map((d: string) => <path d={d} pathLength="1" />)}
+    </svg>
     <!-- 1. Superficie: "Lo grande pasa" queda sobre el agua y "bajo el agua." queda, literalmente, bajo el agua -->
     <section class="hero" id="superficie-0" data-depth="0">
       <canvas id="waterline" aria-hidden="true"></canvas>
@@ -23,7 +27,7 @@ const zoneMedia: Record<string, { plates?: number[]; clip?: string }> = { superf
         <h1 class="hero-title display" data-gl data-tw data-tw-step="62" data-tw-caret="stay" data-tw-name="hero"><span class="hero-l1">Lo grande pasa</span> <span class="hero-l2">bajo el agua.</span></h1>
         <div class="hero-sea">
           <div>
-            <p class="hero-sub" data-gl data-tw data-tw-after="hero" data-tw-name="herosub">Somos Ceto Studio. Hacemos webs, sistemas e inteligencia artificial para negocios de servicios y profesionales.</p>
+            <p class="hero-sub" data-tw data-tw-after="hero" data-tw-name="herosub">Somos Ceto Studio. Hacemos webs, sistemas e inteligencia artificial para negocios de servicios y profesionales.</p>
             <p class="hero-cta"><a class="btn" href="#manifiesto" data-magnetic>Baja con nosotros <i>↓</i></a></p>
           </div>
           <p class="hero-meta" data-tw data-tw-after="herosub">Desliza para sumergirte</p>

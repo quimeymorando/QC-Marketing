@@ -137,9 +137,12 @@ html.has-cursor, html.has-cursor a, html.has-cursor button { cursor: none; }
 
 /* ---------- intro ---------- */
 html.intro .hero .wrap, html.intro .nav, html.intro .meter { opacity: 0; }
-/* elección de sonido: aparece con el nombre ya revelado; la intro sigue cuando eligen (o sola, a los 9 segundos) */
-.gate { position: fixed; left: 0; right: 0; bottom: clamp(118px, 21vh, 230px); z-index: 60; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 0 var(--gut); color: var(--petrol); opacity: 0; visibility: hidden; transform: translateY(8px); transition: opacity .35s, transform .35s, visibility 0s .35s; }
-.gate.on { opacity: 1; visibility: visible; transform: none; transition: opacity .7s, transform .7s var(--ease); }
+/* elección de sonido: es lo primero que se ve; al elegir (o sola, a los 9 segundos) cae la gota */
+.gate { position: fixed; inset: 0 0 12vh 0; z-index: 60; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 0 var(--gut); color: var(--petrol); opacity: 0; visibility: hidden; transition: opacity .35s, visibility 0s .35s; }
+.gate.on { opacity: 1; visibility: visible; transition: opacity .8s .15s; }
+.gate-q { font: 400 clamp(34px, 4.6vw, 76px)/1 var(--display); letter-spacing: -.015em; margin-bottom: clamp(8px, 2vh, 22px); text-align: center; }
+/* logo de la intro: se dibuja sobre el nombre y después viaja al menú */
+.intro-logo { position: fixed; left: 0; top: 0; z-index: 55; pointer-events: none; opacity: 0; overflow: visible; will-change: transform; }
 .gate-opts { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
 .gate button { padding: 14px 20px; border: 1px solid var(--petrol); font: 500 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; transition: background .25s, color .25s; }
 .gate button[data-gate="on"] { background: var(--petrol); color: var(--foam); }
@@ -203,14 +206,14 @@ html.gl-on .hero [data-gl] .tw-c { -webkit-text-fill-color: transparent; }
   .zone-luz .zone-grid { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); }
   .zone-luz .zone-media { order: -1; }
   .zone-luz .plates { justify-content: start; }
-  /* zona crepuscular: el título cruza todo el ancho; debajo, la ventana de observación grande y el texto al costado */
-  .zone-crepuscular .zone-grid { grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); align-items: end; row-gap: clamp(30px, 6vh, 70px); }
+  /* zona crepuscular: título a la izquierda y texto a la derecha, alineados por abajo; la ventana de observación cierra la zona a todo el ancho */
+  .zone-crepuscular .zone-grid { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); align-items: end; row-gap: 0; }
   .zone-crepuscular .zone-copy { display: contents; }
-  .zone-crepuscular .zone-pain { grid-column: 1 / -1; font-size: clamp(44px, 6.6vw, 118px); max-width: 15ch; }
-  .zone-crepuscular .zone-media { grid-column: 1; grid-row: 2 / span 2; }
-  .zone-crepuscular .zone-body { grid-column: 2; grid-row: 2; margin-top: 0; align-self: end; }
-  .zone-crepuscular .zone-svc { grid-column: 2; grid-row: 3; justify-self: start; align-self: start; margin-top: 0; }
-  .zone-crepuscular .obs-view { aspect-ratio: 16 / 9; }
+  .zone-crepuscular .zone-pain { grid-column: 1; grid-row: 1 / span 2; align-self: end; font-size: clamp(40px, 5.5vw, 98px); }
+  .zone-crepuscular .zone-body { grid-column: 2; grid-row: 1; margin-top: 0; align-self: end; }
+  .zone-crepuscular .zone-svc { grid-column: 2; grid-row: 2; justify-self: start; margin-top: clamp(20px, 3vh, 30px); }
+  .zone-crepuscular .zone-media { grid-column: 1 / -1; grid-row: 3; margin-top: clamp(44px, 8vh, 96px); }
+  .zone-crepuscular .obs-view { aspect-ratio: 21 / 8; -webkit-mask-image: radial-gradient(closest-side, #000 70%, transparent 100%); mask-image: radial-gradient(closest-side, #000 70%, transparent 100%); }
 }
 /* abismo: todo al centro, como lo que entra en el haz de una linterna */
 .zone-abismo .zone-grid { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; row-gap: clamp(24px, 5vh, 54px);
@@ -221,8 +224,12 @@ html.gl-on .hero [data-gl] .tw-c { -webkit-text-fill-color: transparent; }
 .zone-abismo .plate-box { width: min(500px, 70vw) !important; }
 .zone-abismo .plate figcaption { margin-left: auto; margin-right: auto; }
 .zone-abismo .zone-pain { font-size: clamp(38px, 5.6vw, 96px); max-width: 17ch; margin: 0 auto; }
-.zone-abismo .zone-body { margin-left: auto; margin-right: auto; max-width: 50ch; }
-.lamp-note { position: absolute; top: calc(clamp(44px, 7vh, 80px) + 26px); left: 0; right: 0; font: 400 10px/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-2); }
+.zone-abismo .zone-body { margin-left: auto; margin-right: auto; max-width: 50ch; color: rgba(242, 246, 247, .88); }
+.zone-abismo .zone-pain .t2 { color: var(--bio); }
+.zone-abismo .zone-svc { color: var(--foam); border-color: rgba(242, 246, 247, .42); }
+.zone-abismo .plate figcaption { color: var(--fg-soft); }
+.zone-abismo .plate figcaption i { color: var(--foam); }
+.lamp-note { position: absolute; top: calc(clamp(44px, 7vh, 80px) + 26px); left: 0; right: 0; font: 400 10px/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-soft); }
 @media (hover: none) { .lamp-fine { display: none; } .zone-abismo .zone-grid { --lr: 56vh; } }
 
 /* observación: material real con rótulo de instrumento */
@@ -378,7 +385,7 @@ html.arriving .curtain { visibility: visible; }
 }
 @media (max-width: 560px) {
   body { font-size: 16px; }
-  .gate { bottom: calc(112px + env(safe-area-inset-bottom, 0px)); gap: 10px; }
+  .gate { gap: 10px; }
   .gate-opts { flex-wrap: nowrap; gap: 8px; }
   .gate button { padding: 13px 11px; font-size: 10px; letter-spacing: .05em; white-space: nowrap; }
   .gate-note { font-size: 8.5px; }
