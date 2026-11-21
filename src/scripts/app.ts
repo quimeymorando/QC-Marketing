@@ -49,8 +49,43 @@ const whale = isHome && !reduce ? createWhale(document.getElementById('whale') a
 let bathy: Awaited<ReturnType<typeof initBathy>> = null;
 initBathy().then((b) => (bathy = b));
 
-// --- el cursor agita el agua ---
 let lp: [number, number] | null = null, lastMove = 0;
+
+// --- sonido: la primera vez se elige en la intro; después se recuerda durante la visita ---
+let soundPref: string | null = null; try { soundPref = sessionStorage.getItem('ceto-sound'); } catch {}
+if (soundPref === '1') { const arm = () => { sound.set(true); removeEventListener('pointerdown', arm); removeEventListener('keydown', arm); }; addEventListener('pointerdown', arm); addEventListener('keydown', arm); }
+function askSound(): Promise<void> {
+  const gate = document.querySelector<HTMLElement>('.gate'); if (!gate) return Promise.resolve();
+  return new Promise((done) => {
+    let closed = false;
+    const choose = (v: boolean) => { if (closed) return; closed = true; clearTimeout(auto); removeEventListener('wheel', quiet); removeEventListener('touchmove', quiet); removeEventListener('keydown', esc); sound.set(v); gate.classList.remove('on'); done(); };
+    const quiet = () => choose(false), esc = (e: KeyboardEvent) => { if (e.key === 'Escape') choose(false); };
+    const auto = setTimeout(() => choose(false), 9000);   // sin respuesta: entra en silencio, nadie queda trabado
+    gate.querySelectorAll<HTMLButtonElement>('[data-gate]').forEach((b) => b.addEventListener('click', () => choose(b.dataset.gate === 'on'), { once: true }));
+    addEventListener('wheel', quiet, { passive: true }); addEventListener('touchmove', quiet, { passive: true }); addEventListener('keydown', esc);
+    gate.classList.add('on');
+  });
+}
+
+// --- linterna del abismo: ahí abajo no llega la luz; se ve lo que alumbra el cursor ---
+const lampZone = !reduce ? document.querySelector<HTMLElement>('.zone-abismo') : null, lampEl = lampZone?.querySelector<HTMLElement>('.zone-grid') || null, lampAim = lampZone?.querySelector<HTMLElement>('.zone-pain') || null;
+const fineHover = matchMedia('(hover: hover) and (pointer: fine)').matches; let lampX = 0, lampY = 0, lampK = -1, lampInit = false;
+function lamp(now: number) {
+  if (!lampZone || !lampEl) return;
+  const vh = innerHeight, zr = lampZone.getBoundingClientRect();
+  if (zr.bottom < -80 || zr.top > vh + 80) { if (lampK !== 0) { lampK = 0; lampEl.style.setProperty('--dim', '1'); } return; }
+  const cover = (Math.min(zr.bottom, vh) - Math.max(zr.top, 0)) / vh, t = Math.min(1, Math.max(0, (cover - 0.35) / 0.4)), k = t * t * (3 - 2 * t);
+  const r = lampEl.getBoundingClientRect(); let tx: number, ty: number;
+  if (fineHover && lp && now - lastMove < 3200) { tx = lp[0]; ty = lp[1]; }
+  else if (fineHover && lampAim) { const a = lampAim.getBoundingClientRect(); tx = a.left + a.width * 0.45; ty = a.top + a.height * 0.5; }   // cursor quieto: la linterna vuelve al texto
+  else { tx = innerWidth * 0.5; ty = vh * 0.46; }                                                                                       // pantallas táctiles: alumbra el centro
+  if (!lampInit) { lampX = tx; lampY = ty; lampInit = true; }
+  const ease = fineHover && lp && now - lastMove < 3200 ? 0.2 : 0.05; lampX += (tx - lampX) * ease; lampY += (ty - lampY) * ease;
+  lampEl.style.setProperty('--lx', (lampX - r.left).toFixed(1) + 'px'); lampEl.style.setProperty('--ly', (lampY - r.top).toFixed(1) + 'px');
+  if (Math.abs(k - lampK) > 0.004) { lampK = k; lampEl.style.setProperty('--dim', (1 - 0.8 * k).toFixed(3)); }
+}
+
+// --- el cursor agita el agua ---
 if (water) {
   addEventListener('pointermove', (e) => {
     const x = e.clientX, y = e.clientY; lastMove = performance.now();
@@ -101,7 +136,7 @@ gsap.ticker.add(() => {
   if (water && sonarOn && started && now > nextPing && !document.hidden) { const r = sonarBtn!.getBoundingClientRect(); water.drop(r.left + r.width / 2, r.top + r.height / 2, 0.05, 0.11); sound.ping(0.1); nextPing = now + 3400; }
   whale?.frame(now, scroll, started && !introOn, lp && now - lastMove < 2500 ? lp : null);
   if (!document.hidden) water?.frame(now);
-  bathy?.draw(now);
+  bathy?.draw(now); lamp(now);
 });
 
 let rz = 0;
@@ -117,7 +152,7 @@ addEventListener('resize', () => { clearTimeout(rz); rz = window.setTimeout(() =
       introOn = true; history.scrollRestoration = 'manual'; window.scrollTo(0, 0); lenis?.stop();
       root.classList.add('sea-low');
       const rise = () => { root.classList.remove('sea-low'); if (line) gsap.to(line, { level: 1, duration: 1.35, ease: 'power2.inOut', onComplete: () => depth.measure() }); started = true; startType(); };
-      if (water) await playIntro(water, line, rise); else { if (line) line.level = 1; await introFallback(); rise(); }
+      if (water) await playIntro(water, line, rise, soundPref === null ? askSound : undefined); else { if (line) line.level = 1; await introFallback(); rise(); }
       lenis?.start(); introOn = false;
     }
   } else await arrive();

@@ -4,7 +4,7 @@ import gsap from 'gsap';
 import type { Water } from './water';
 import type { Waterline } from './waterline';
 
-export function playIntro(water: Water, line: Waterline | null, onHero: () => void): Promise<void> {
+export function playIntro(water: Water, line: Waterline | null, onHero: () => void, ask?: () => Promise<void>): Promise<void> {
   return new Promise((resolve) => {
     const s = water.state, vh = innerHeight, vw = innerWidth;
     if (line) line.level = 0;
@@ -21,14 +21,17 @@ export function playIntro(water: Water, line: Waterline | null, onHero: () => vo
       .add(() => { s.dropOn = 0; line?.splash(vw / 2, 15); water.drop(vw / 2, vh * (1 - sea), 0.07, 0.09); }, IMPACT)
       .to(s, { level: 1.1, duration: 2.1, ease: 'power2.inOut' }, IMPACT + 0.12)
       .add(() => { for (let i = 0; i < 6; i++) gsap.delayedCall(i * 0.3, () => water.drop(vw * (0.2 + Math.random() * 0.6), vh * (0.3 + Math.random() * 0.5), 0.04, 0.03)); }, IMPACT + 0.4)
+      // con el nombre ya revelado, la intro espera la elección de sonido (solo la primera vez de la sesión)
+      .add(() => { if (!ask || paused) return; tl.pause(); gated = true; ask().then(() => { gated = false; tl.timeScale(1).play(); }); }, 4.5)
       // el nombre queda un momento quieto antes de irse
       .to(s, { dissolve: 1, duration: 1.0, ease: 'power1.in' }, 4.9)
       .to(s, { level: sea, duration: 1.05, ease: 'power3.inOut' }, 5.05)
       .to(s, { tintA: 0, duration: 0.3, ease: 'power1.in' }, 5.8)
       .add(() => { document.documentElement.classList.remove('intro'); }, 5.85)
       .to({}, { duration: 0.02 }, 6.1);
-    if (location.search.includes('intro=pausa')) tl.pause();   // para revisar la intro cuadro por cuadro
-    const skip = () => tl.timeScale(4);
+    const paused = location.search.includes('intro=pausa'); let gated = false;
+    if (paused) tl.pause();   // para revisar la intro cuadro por cuadro
+    const skip = () => { if (!gated) tl.timeScale(4); };
     const evs = ['pointerdown', 'wheel', 'keydown', 'touchstart'] as const;
     evs.forEach((e) => addEventListener(e, skip, { passive: true }));
     const off = () => evs.forEach((e) => removeEventListener(e, skip));

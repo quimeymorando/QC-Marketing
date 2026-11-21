@@ -1,11 +1,11 @@
 // Fondo del mar: curvas de nivel reales (ETOPO) del footer. El cursor las ondula.
-type Bathy = { name: string; maxDepth: number; maxDepthAt?: { lat: number; lon: number }; bbox: { lat0: number; lat1: number; lon0: number; lon1: number }; levels: { depth: number; lines: number[][] }[] };
+type Bathy = { name: string; maxDepth: number; maxDepthAt?: { lat: number; lon: number }; bbox: { lat0: number; lat1: number; lon0: number; lon1: number }; levels: { depth: number; lines: number[][] }[]; grid?: { w: number; h: number; data: number[] } };
 
 export async function initBathy() {
   const cv = document.getElementById('bathy') as HTMLCanvasElement | null; if (!cv) return null;
   let data: Bathy;
   try { const r = await fetch('/media/bathy.json'); if (!r.ok) return null; data = await r.json(); } catch { return null; }
-  const fmt = (n: number) => Math.round(n).toLocaleString('es-ES').replace(/ /g, '.');
+  const fmt = (n: number) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   const set = (sel: string, txt: string) => { const el = document.querySelector(sel); if (el) el.textContent = txt; };
   set('[data-bathy-name]', data.name); set('[data-bathy-depth]', `${fmt(data.maxDepth)} m de profundidad`);
   if (data.maxDepthAt) set('[data-bathy-pos]', `${Math.abs(data.maxDepthAt.lat).toFixed(1)}° ${data.maxDepthAt.lat < 0 ? 'S' : 'N'} · ${Math.abs(data.maxDepthAt.lon).toFixed(1)}° ${data.maxDepthAt.lon < 0 ? 'O' : 'E'}`);
@@ -35,6 +35,22 @@ export async function initBathy() {
     }
   }
   const foot = cv.parentElement!; let lastRing = 0;
+  // sonda: bajo el cursor se lee la profundidad real de ese punto del mapa (grilla ETOPO1) y sus coordenadas
+  const probe = foot.querySelector<HTMLElement>('.foot-probe'), pD = probe?.querySelector<HTMLElement>('[data-probe-depth]'), pP = probe?.querySelector<HTMLElement>('[data-probe-pos]');
+  const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
+  function sound(px: number, py: number) {
+    const g = data.grid; if (!g || !probe || !pD || !pP) return;
+    const s = Math.max(w, h * 1.15), u = (px - (w - s) / 2) / s, v = (py - (h - s) / 2) / s;
+    if (u < 0 || u > 1 || v < 0 || v > 1) { probe.classList.remove('on'); return; }
+    const gx = u * (g.w - 1), gy = v * (g.h - 1), x0 = Math.floor(gx), y0 = Math.floor(gy), x1 = Math.min(g.w - 1, x0 + 1), y1 = Math.min(g.h - 1, y0 + 1), fx = gx - x0, fy = gy - y0;
+    const at = (x: number, y: number) => g.data[y * g.w + x];
+    const alt = (at(x0, y0) * (1 - fx) + at(x1, y0) * fx) * (1 - fy) + (at(x0, y1) * (1 - fx) + at(x1, y1) * fx) * fy;
+    const lon = data.bbox.lon0 + u * (data.bbox.lon1 - data.bbox.lon0), lat = data.bbox.lat1 - v * (data.bbox.lat1 - data.bbox.lat0);
+    pD.textContent = alt < 0 ? `${fmt(-alt)} m` : `Tierra · ${fmt(alt)} m`;
+    pP.textContent = `${Math.abs(lat).toFixed(2).replace('.', ',')}° ${lat < 0 ? 'S' : 'N'} · ${Math.abs(lon).toFixed(2).replace('.', ',')}° ${lon < 0 ? 'O' : 'E'}`;
+    probe.style.transform = `translate(${Math.min(px + 22, w - 190)}px, ${py + 18}px)`; probe.classList.add('on');
+  }
+  if (fine) { foot.addEventListener('pointermove', (e) => { const r = cv.getBoundingClientRect(); sound(e.clientX - r.left, e.clientY - r.top); }, { passive: true }); foot.addEventListener('pointerleave', () => probe?.classList.remove('on')); }
   foot.addEventListener('pointermove', (e) => { const now = performance.now(); if (now - lastRing < 140) return; lastRing = now; const r = cv.getBoundingClientRect(); rings.push({ x: e.clientX - r.left, y: e.clientY - r.top, t: now }); if (rings.length > 7) rings.shift(); }, { passive: true });
   new IntersectionObserver(([e]) => { visible = e.isIntersecting; dirty = true; }).observe(cv);
   resize();

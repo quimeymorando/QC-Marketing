@@ -14,7 +14,7 @@ export type Water = {
   ok: boolean; state: WaterState;
   drop(x: number, y: number, r?: number, k?: number): void;
   /** Camino reciente de la cola: n puntos (x, y en pantalla, edad 0..1, distancia) y el largo de la ballena. */
-  setWake(data: Float32Array, n: number, len: number): void;
+  setWake(data: Float32Array, n: number, len: number, strength?: number): void;
   textDirty(ms?: number): void;
   drawName(): void;
   frame(t: number): void;
@@ -52,7 +52,7 @@ float vn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); return mix(mix(h
 float fbm(vec2 p){ return .5*vn(p)+.25*vn(p*2.03+7.)+.125*vn(p*4.1+13.); }
 // Estela de la ballena: altura del agua alrededor del camino que dejó la cola (x, y, edad 0..1, distancia recorrida).
 // Dos lomos que se abren en V y un surco al medio; todo se ensancha y se apaga con la edad.
-float wakeH(vec2 p){
+vec2 wakeH(vec2 p){   // devuelve (altura, distancia al camino)
   int n = int(wkp.x); float best = 1e9, ag = 1.;
   for(int i=0;i<23;i++){
     if(i >= n-1) break;
@@ -63,7 +63,7 @@ float wakeH(vec2 p){
   float LL = wkp.z, w = LL*(.13 + .85*pow(ag,.75)), th = LL*(.13 + .12*ag);
   float q = (best-w)/th, q2 = best/(w*.7+2.);
   // lomos de la V menos el surco del medio; al ensancharse pierden pendiente y se compensa para que no desaparezcan de golpe
-  return (exp(-q*q) - .5*exp(-q2*q2))*pow(1.-ag,1.1)*smoothstep(0.,.035,ag)*(1.+1.2*ag);
+  return vec2((exp(-q*q) - .5*exp(-q2*q2))*pow(1.-ag,1.1)*smoothstep(0.,.035,ag)*(1.+1.2*ag), best);
 }
 vec4 over(vec4 d, vec3 c, float a){ a = clamp(a,0.,1.); return vec4(c*a + d.rgb*(1.-a), a + d.a*(1.-a)); }
 void main(){
@@ -71,10 +71,16 @@ void main(){
   float l=texture(s,uv-vec2(px.x,0.)).r, r=texture(s,uv+vec2(px.x,0.)).r, d=texture(s,uv-vec2(0.,px.y)).r, u=texture(s,uv+vec2(0.,px.y)).r;
   vec2 g = vec2(l-r,d-u);
   vec2 pc = vec2(uv.x*vw, (1.-uv.y)*vh);
-  float hw = 0.; if(wkp.x > 1.5 && pc.x > wkb.x && pc.y > wkb.y && pc.x < wkb.z && pc.y < wkb.w) hw = wakeH(pc);
-  hw *= .7 + .6*vn(vec2(pc.x, pc.y+scroll)*.045);   // el agua nunca es pareja
-  vec2 gwv = -vec2(dFdx(hw), dFdy(hw))*wkp.y*.26;
-  gwv *= min(1., .022/max(length(gwv),1e-5));   // sin picos donde el camino se cruza consigo mismo
+  // la pendiente de la estela se mide punto por punto (tres lecturas): así el relieve sale liso, sin escalones
+  vec2 gwv = vec2(0.);
+  if(wkp.x > 1.5 && pc.x > wkb.x && pc.y > wkb.y && pc.x < wkb.z && pc.y < wkb.w){
+    vec2 h0 = wakeH(pc);
+    if(h0.y < wkp.z*2.1){
+      float hx = wakeH(pc+vec2(1.5,0.)).x, hy = wakeH(pc+vec2(0.,1.5)).x;
+      gwv = vec2(h0.x-hx, hy-h0.x)/1.5*.26*wkp.w*(.7 + .6*vn(vec2(pc.x, pc.y+scroll)*.045));   // el agua nunca es pareja
+      gwv *= min(1., .03/max(length(gwv),1e-5));
+    }
+  }
   vec2 g0 = g; g += gwv;   // g0 = solo ondas (para refractar el texto); g = ondas + estela (para la luz)
   float gl = length(g);
   vec3 n = normalize(vec3(g*28.,1.));
@@ -197,7 +203,7 @@ export function createWater(canvas: HTMLCanvasElement): Water {
   const tcx = tcv.getContext('2d')!, ncx = ncv.getContext('2d')!;
   const hero = document.querySelector<HTMLElement>('.hero');
   let dirtyUntil = 0, lastScroll = 0, alive = true;
-  const wkData = new Float32Array(96), wkBox = [0, 0, 0, 0]; let wkN = 0, wkLen = 50;
+  const wkData = new Float32Array(96), wkBox = [0, 0, 0, 0]; let wkN = 0, wkLen = 50, wkS = 1;
 
   const params = (t: WebGLTexture) => {
     gl.bindTexture(gl.TEXTURE_2D, t);
@@ -308,7 +314,7 @@ export function createWater(canvas: HTMLCanvasElement): Water {
     gl.uniform4f(show.u('intro'), state.intro, state.level, state.sea, state.impactT);
     gl.uniform4f(show.u('intro2'), state.dropY, state.dropOn, state.dissolve, state.tintA);
     gl.uniform2f(show.u('intro3'), state.dropStretch, state.nameA);
-    gl.uniform4fv(show.u('wk'), wkData); gl.uniform4f(show.u('wkp'), wkN, W / vw, wkLen, 0); gl.uniform4f(show.u('wkb'), wkBox[0], wkBox[1], wkBox[2], wkBox[3]);
+    gl.uniform4fv(show.u('wk'), wkData); gl.uniform4f(show.u('wkp'), wkN, W / vw, wkLen, wkS); gl.uniform4f(show.u('wkb'), wkBox[0], wkBox[1], wkBox[2], wkBox[3]);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
 
@@ -320,11 +326,11 @@ export function createWater(canvas: HTMLCanvasElement): Water {
 
   return {
     ok: true, state, drop: addDrop, drawName, frame, resize,
-    setWake(data, n, len) {
-      wkN = Math.min(24, n); wkLen = len; if (wkN < 2) { wkN = 0; return; }
+    setWake(data, n, len, strength = 1) {
+      wkN = Math.min(24, n); wkLen = len; wkS = strength; if (wkN < 2) { wkN = 0; return; }
       wkData.set(data.subarray(0, wkN * 4));
       let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (let i = 0; i < wkN; i++) { const x = data[i * 4], y = data[i * 4 + 1]; x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
-      const m = len * 1.7; wkBox[0] = x0 - m; wkBox[1] = y0 - m; wkBox[2] = x1 + m; wkBox[3] = y1 + m;
+      const m = len * 2.2; wkBox[0] = x0 - m; wkBox[1] = y0 - m; wkBox[2] = x1 + m; wkBox[3] = y1 + m;
     },
     textDirty(ms = 260) { dirtyUntil = Math.max(dirtyUntil, performance.now() + ms); },
   };

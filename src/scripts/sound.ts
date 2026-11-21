@@ -51,8 +51,9 @@ export function initSound(getDepth: () => number) {
     if (ctx) { if (v) ctx.resume(); master.gain.setTargetAtTime(v ? 1 : 0, ctx.currentTime, v ? 0.5 : 0.12); }
     btns.forEach((b) => { b.setAttribute('aria-pressed', String(v)); const s = b.querySelector('[data-sound-state]'); if (s) s.textContent = v ? 'sí' : 'no'; });
     clearInterval(timer); if (v) { nextSong = performance.now() + 5000; timer = window.setInterval(tick, 250); tick(); }
+    try { sessionStorage.setItem('ceto-sound', v ? '1' : '0'); } catch {}
   }
   btns.forEach((b) => b.addEventListener('click', () => set(!on)));
   document.addEventListener('visibilitychange', () => { if (ctx && on) master.gain.setTargetAtTime(document.hidden ? 0 : 1, ctx.currentTime, 0.2); });
-  return { ping, song, get on() { return on; } };
+  return { ping, song, set, get on() { return on; } };
 }

@@ -137,6 +137,17 @@ html.has-cursor, html.has-cursor a, html.has-cursor button { cursor: none; }
 
 /* ---------- intro ---------- */
 html.intro .hero .wrap, html.intro .nav, html.intro .meter { opacity: 0; }
+/* elección de sonido: aparece con el nombre ya revelado; la intro sigue cuando eligen (o sola, a los 9 segundos) */
+.gate { position: fixed; left: 0; right: 0; bottom: clamp(118px, 21vh, 230px); z-index: 60; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 0 var(--gut); color: var(--petrol); opacity: 0; visibility: hidden; transform: translateY(8px); transition: opacity .35s, transform .35s, visibility 0s .35s; }
+.gate.on { opacity: 1; visibility: visible; transform: none; transition: opacity .7s, transform .7s var(--ease); }
+.gate-opts { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.gate button { padding: 14px 20px; border: 1px solid var(--petrol); font: 500 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; transition: background .25s, color .25s; }
+.gate button[data-gate="on"] { background: var(--petrol); color: var(--foam); }
+.gate button:hover, .gate button:focus-visible { background: var(--ink); border-color: var(--ink); color: var(--foam); }
+.gate-note { font: 400 9.5px/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; opacity: .62; text-align: center; }
+.gate-bar { width: 132px; height: 1px; background: currentColor; opacity: .55; transform-origin: left; }
+.gate.on .gate-bar { animation: gate-bar 9s linear forwards; }
+@keyframes gate-bar { to { transform: scaleX(0); } }
 html.sea-low .hero-sea { opacity: 0; }
 .hero-sea { transition: opacity .9s ease .5s; }
 .hero .wrap, .meter { transition: opacity .7s ease; }
@@ -175,6 +186,7 @@ html.gl-on .hero [data-gl] .tw-c { -webkit-text-fill-color: transparent; }
 
 /* ---------- zonas ---------- */
 .zone { position: relative; min-height: 100svh; display: flex; align-items: center; padding: clamp(120px, 17vh, 190px) 0 clamp(90px, 14vh, 170px); }
+.zone-abismo { padding-top: clamp(150px, 21vh, 230px); }
 /* regla de sonda: cada zona abre con una regla graduada, como la de un instrumento de profundidad */
 .zone-rule { position: absolute; top: clamp(44px, 7vh, 80px); left: 0; right: 0; display: flex; align-items: flex-end; gap: 18px; font: 400 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-soft); }
 .zone-rule span { flex: none; }
@@ -185,6 +197,33 @@ html.gl-on .hero [data-gl] .tw-c { -webkit-text-fill-color: transparent; }
 .zone-body p:first-child { color: var(--fg); }
 .zone-svc { margin-top: clamp(24px, 4vh, 40px); display: inline-block; padding: 9px 12px; border: 1px solid var(--line); font: 400 10.5px/1.3 var(--mono); letter-spacing: .07em; text-transform: uppercase; color: var(--fg-soft); }
 .zone-media { position: relative; min-width: 0; }
+/* una composición por profundidad: arriba el aire y el orden, abajo el encuadre se cierra */
+@media (min-width: 901px) {
+  /* zona de luz: se espeja. Las láminas a la izquierda, el texto a la derecha */
+  .zone-luz .zone-grid { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); }
+  .zone-luz .zone-media { order: -1; }
+  .zone-luz .plates { justify-content: start; }
+  /* zona crepuscular: el título cruza todo el ancho; debajo, la ventana de observación grande y el texto al costado */
+  .zone-crepuscular .zone-grid { grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); align-items: end; row-gap: clamp(30px, 6vh, 70px); }
+  .zone-crepuscular .zone-copy { display: contents; }
+  .zone-crepuscular .zone-pain { grid-column: 1 / -1; font-size: clamp(44px, 6.6vw, 118px); max-width: 15ch; }
+  .zone-crepuscular .zone-media { grid-column: 1; grid-row: 2 / span 2; }
+  .zone-crepuscular .zone-body { grid-column: 2; grid-row: 2; margin-top: 0; align-self: end; }
+  .zone-crepuscular .zone-svc { grid-column: 2; grid-row: 3; justify-self: start; align-self: start; margin-top: 0; }
+  .zone-crepuscular .obs-view { aspect-ratio: 16 / 9; }
+}
+/* abismo: todo al centro, como lo que entra en el haz de una linterna */
+.zone-abismo .zone-grid { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; row-gap: clamp(24px, 5vh, 54px);
+  -webkit-mask-image: radial-gradient(ellipse var(--lr) calc(var(--lr) * .9) at var(--lx, 50%) var(--ly, 42%), #000 0, #000 40%, rgba(0, 0, 0, var(--dim, 1)) 100%);
+  mask-image: radial-gradient(ellipse var(--lr) calc(var(--lr) * .9) at var(--lx, 50%) var(--ly, 42%), #000 0, #000 40%, rgba(0, 0, 0, var(--dim, 1)) 100%); --lr: 54vh; }
+.zone-abismo .zone-media { order: -1; max-width: none; }
+.zone-abismo .plates { justify-content: center; }
+.zone-abismo .plate-box { width: min(500px, 70vw) !important; }
+.zone-abismo .plate figcaption { margin-left: auto; margin-right: auto; }
+.zone-abismo .zone-pain { font-size: clamp(38px, 5.6vw, 96px); max-width: 17ch; margin: 0 auto; }
+.zone-abismo .zone-body { margin-left: auto; margin-right: auto; max-width: 50ch; }
+.lamp-note { position: absolute; top: calc(clamp(44px, 7vh, 80px) + 26px); left: 0; right: 0; font: 400 10px/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-2); }
+@media (hover: none) { .lamp-fine { display: none; } .zone-abismo .zone-grid { --lr: 56vh; } }
 
 /* observación: material real con rótulo de instrumento */
 .obs { position: relative; }
@@ -288,6 +327,11 @@ html.js .pass.printed { clip-path: inset(0); transition: clip-path 1.5s steps(30
 /* ---------- footer (fondo del mar) ---------- */
 .foot { padding: clamp(80px, 14vh, 170px) 0 0; overflow: hidden; }
 #bathy { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; opacity: .9; }
+/* sonda: profundidad real y coordenadas del punto del mapa que está bajo el cursor */
+.foot-probe { position: absolute; left: 0; top: 0; z-index: 3; pointer-events: none; display: grid; gap: 3px; font-family: var(--mono); text-transform: uppercase; white-space: nowrap; opacity: 0; transition: opacity .25s; will-change: transform; }
+.foot-probe.on { opacity: 1; }
+.foot-probe b { font-weight: 400; font-size: 13px; letter-spacing: .02em; font-variant-numeric: tabular-nums; color: var(--cyan); }
+.foot-probe span { font-size: 9.5px; letter-spacing: .08em; color: var(--fg-soft); font-variant-numeric: tabular-nums; }
 .foot-top { display: grid; grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr)); gap: 30px clamp(20px, 3vw, 50px); }
 .foot-line { max-width: 28ch; font-size: clamp(17px, 1.4vw, 20px); }
 .foot-col h3 { font: 400 10px/1.3 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-2); margin-bottom: 14px; }
@@ -334,6 +378,10 @@ html.arriving .curtain { visibility: visible; }
 }
 @media (max-width: 560px) {
   body { font-size: 16px; }
+  .gate { bottom: calc(112px + env(safe-area-inset-bottom, 0px)); gap: 10px; }
+  .gate-opts { flex-wrap: nowrap; gap: 8px; }
+  .gate button { padding: 13px 11px; font-size: 10px; letter-spacing: .05em; white-space: nowrap; }
+  .gate-note { font-size: 8.5px; }
   .pk-grid { grid-template-columns: minmax(0, 1fr); max-width: 360px; }
   .pass { transform: none; }
 }
