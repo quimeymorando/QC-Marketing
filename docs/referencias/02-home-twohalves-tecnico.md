@@ -157,4 +157,5 @@ El nombre gigante, a 15.6vw, se escribe letra por letra. Muestra un reloj con la
 - **Sonido:** opcional, con botón.
 - **Sin cubos 3D.**
 - **Construcción:** Opus para análisis y marca; Fable para construir la web.
-- **Pendiente:** nombre de la marca, tipografías, formato de paquetes, stack final (recomendado Next.js + Vercel).
+- **Hosting:** Cloudflare (Workers con assets estáticos). **Framework propuesto:** Astro (de Cloudflare desde enero 2026) + GSAP + Lenis + three.js/WebGL; formulario por un endpoint en el Worker que manda a GHL. Pendiente de confirmación.
+- **Pendiente:** nombre de la marca, tipografías, formato de paquetes.
