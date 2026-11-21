@@ -23,23 +23,17 @@ En Ceto, **cada efecto tiene que tener una causa física o una fuente real.**
 | **Zona crepuscular** | **Láminas científicas antiguas** (Challenger 1873–76, Haeckel) en trama de 1 bit. La onda del cursor las "revela" como luz que pasa. Cada criatura lleva su ficha (nombre, profundidad, expedición). | Haeckel *Report on the Siphonophorae* 1888, Günther *Deep-Sea Fishes* 1887, *Kunstformen der Natur* | Dominio público (Internet Archive / BHL) |
 | **Transición crepuscular** | Banda de **ecograma de sonar real**: así aparece el plancton en un sonar ("capa de dispersión profunda"). Recoloreada a cian y negro. | NOAA NCEI Water Column Sonar | Libre, cita DOI 10.7289/V5HT2M7C |
 | **Abismo** | Negro. Solo destellos de **píxeles duros** (sin blur) color #5CFFC4 donde el agua se agita, por el cursor o la ballena. | Pase de dithering propio o Paper Shaders ≥0.0.77 | Apache-2.0 |
-| **Fondo del mar (footer)** | **Curvas de nivel de una fosa real**, con coordenadas, que la onda deforma. Escaneo real de una ballena en el fondo (whale fall). | ETOPO 2022 + d3-contour. Modelo MBARI en Sketchfab | CC0 + ISC. CC-BY |
+| **Fondo del mar (footer)** | **Curvas de nivel de una fosa real**, con coordenadas, que la onda deforma. | ETOPO 2022 + d3-contour | CC0 + ISC |
 
-## La ballena
-- **Modelo:** [Blue Whale – Textured](https://sketchfab.com/3d-models/d24d19021c724c3a9134eebcb76b0e0f) (ostapblendercg). Tiene 2.424 caras, animación de nado y licencia CC-BY. Ver [ballenas-3d-candidatas.jpg](ballenas-3d-candidatas.jpg).
-- **Material propio, no la textura de foto:**
-  - En la superficie, silueta oscura con borde de luz cian.
-  - En el abismo, contorno en trama y destellos donde roza el agua.
-- **Recorrido:** sale del logo del menú, igual que la grulla en Two Halves. Sigue una ruta ligada al scroll y baja hasta el fondo. En el footer "descansa" junto al whale fall.
-- **Estela:** burbujas chiquitas que suben oscilando, con borde refractivo (no puntos planos), más una distorsión leve del agua detrás de la cola. La estela también excita el plancton.
-- **Performance:**
-  - Una sola escena WebGL con un solo loop: el ticker de GSAP alimentando a Lenis.
-  - Se pausa fuera de pantalla.
-  - Si no hay WebGL o está activado "reducir movimiento", se muestra una versión estática.
+## La ballena (decisión 21/11: **dibujada, no 3D**)
+- **Ilustración propia en 2D**, como la grulla de Two Halves: dibujada a mano o en vectores, animada como una cadena de segmentos que ondula sobre la curva del scroll. Nada de modelos 3D.
+- **Sale del logo** del menú (el logo está por definir) y baja nadando con el scroll.
+- **Estela de agua, no burbujas ni línea punteada:** la ballena empuja la misma simulación de ondas del cursor. Deja una estela tipo **kelvin wake** (la V que deja un barco o un animal al nadar) que se abre y se disipa detrás de la cola, y distorsiona lo que hay detrás.
+- Como la estela es agua, también hace destellar el plancton en el abismo.
 
 ## Texto
 - **Tipografías:** Sprat + Ronzino + Martian Mono, en ancho fijo (sin efecto de presión).
-- **Aparición:** letra por letra, al estilo de Two Halves, como "lectura de sonar".
+- **Efectos por sección:** ver [../referencias/03-twohalves-efectos-de-texto.md](../referencias/03-twohalves-efectos-de-texto.md).
 
 ## Descartado y por qué
 - **MBARI (video):** solo uso educativo; prohíbe webs y publicidad.
@@ -51,7 +45,6 @@ En Ceto, **cada efecto tiene que tener una causa física o una fuente real.**
 
 ## Créditos obligatorios (página de colofón)
 - "NOAA Ocean Exploration", o el crédito exacto de cada pieza.
-- Autores de los modelos de Sketchfab (CC-BY): ostapblendercg; MBARI (whale fall).
 - "NCEI Water Column Sonar Data Archive, doi:10.7289/V5HT2M7C".
 - ETOPO 2022 (NOAA NCEI).
 - Láminas: Biodiversity Heritage Library / Internet Archive.
