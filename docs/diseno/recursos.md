@@ -43,13 +43,27 @@ Verificado el 21/11/2026. **No es asesoramiento legal:** antes de publicar, revi
   - [awesome-webgl](https://github.com/sjfricke/awesome-webgl)
   - [graphics-resources](https://github.com/mattdesl/graphics-resources)
 
-## Ballena
+## Ballena 3D: candidatas (Sketchfab, descargables)
+Todas con licencia CC Attribution (uso comercial permitido, citando al autor en el colofón). Ver [ballenas-3d-candidatas.jpg](ballenas-3d-candidatas.jpg).
+
+| Modelo | Autor | Caras | Animación | Comentario |
+|---|---|---|---|---|
+| [Blue Whale – Textured](https://sketchfab.com/3d-models/d24d19021c724c3a9134eebcb76b0e0f) | ostapblendercg | 2.424 | Sí, 1 | **Favorita para la web.** Muy liviana, realista, nadando. La más popular (1.700 likes). |
+| [Humpback Whale](https://sketchfab.com/3d-models/7984cdf86d6946ca8e13f94a5ad5b33c) | ostapblendercg | 2.414 | Sí, 1 | Jorobada del mismo autor; también muy liviana. |
+| [Blue whale (Animated)](https://sketchfab.com/3d-models/1fc22d7e249b41b995dbff1052bb2a1a) | andrey. | 12.080 | Sí, 1 | La más cinematográfica, de frente. |
+| [High-Poly Humpback](https://sketchfab.com/3d-models/5a6a09f1c27e4d0f890f2a30c10d7a81) | K9239 | 51.760 | No | Mucho detalle; habría que animarla. |
+| [Sperm Whale](https://sketchfab.com/3d-models/7ac6a7cdc74744739092df2a7f44833c) | ostapblendercg | 1.322 | Sí, 1 | Cachalote: la ballena que baja más profundo. |
+| [Whale Fall at Davidson Octopus Gardens](https://sketchfab.com/3d-models/1f3e23b319734019a3d5f251ea43975a) | MBARI | 5.000.000 | No | **Escaneo real** de una ballena muerta en el fondo del mar (instituto MBARI). Hay que simplificarlo. Ideal para el fondo del mar / footer. |
+
+Para descargarlas hace falta una cuenta gratuita de Sketchfab.
+
+## Ballena (dibujo propio como alternativa)
 - No hay un cuerpo de ballena completo de buena calidad en CC0.
 - **Opciones en Sketchfab con licencia CC-BY** (uso comercial permitido con atribución):
   - [Humpback – ostapblendercg](https://sketchfab.com/3d-models/humpback-whale-7984cdf86d6946ca8e13f94a5ad5b33c)
   - [Humpback animated – nolanfa](https://sketchfab.com/3d-models/humpback-whale-animated-marine-mammals-219ed629c9394d869bbf19d443188423)
   - [Sperm whale – ostapblendercg](https://sketchfab.com/3d-models/sperm-whale-7ac6a7cdc74744739092df2a7f44833c)
-- **Recomendación: dibujarla nosotros,** con trazo a mano o en vectores, y animarla como una cadena de segmentos sobre la curva del scroll.
+- **Alternativa: dibujarla nosotros,** con trazo a mano o en vectores, y animarla como una cadena de segmentos sobre la curva del scroll.
 - Referencia para calcar: las láminas de *A Book of Whales* (Beddard, 1900), de dominio público.
 
 ## Sonido
