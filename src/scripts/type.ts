@@ -19,7 +19,7 @@ const byName = new Map<string, Item>();
 const scrubs: { el: HTMLElement; chars: HTMLElement[]; shown: number }[] = [];
 let started = false;
 let onChange: (el: HTMLElement) => void = () => {};
-const caretEl = () => { const k = document.createElement('span'); k.className = 'tw-k'; k.setAttribute('aria-hidden', 'true'); return k; };
+const caretEl = () => { const k = document.createElement('span'); k.className = 'tw-k'; k.setAttribute('aria-hidden', 'true'); k.textContent = '\u2060'; return k; };
 
 function split(el: HTMLElement): HTMLElement[] {
   const out: HTMLElement[] = [];

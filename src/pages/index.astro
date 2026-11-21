@@ -59,9 +59,9 @@ const zoneMedia: Record<string, { plates?: number[]; clip?: string }> = { luz: {
               <p class="label" data-tw>{z.label}</p>
               <h2 class="zone-pain display" data-tw data-tw-step="30" data-tw-caret="end" data-tw-name={`z${i}`}>{z.pain[0]} <span class="t2">{z.pain[1]}</span></h2>
               <div class="zone-body">
-                {z.body.map((p) => <p data-tw data-tw-after={`z${i}`}>{p}</p>)}
+                {z.body.map((p, j) => <p data-tw data-tw-name={`z${i}p${j}`} data-tw-after={j ? `z${i}p${j - 1}` : `z${i}`}>{p}</p>)}
               </div>
-              <p class="zone-svc" data-tw data-tw-after={`z${i}`}>{z.service}</p>
+              <p class="zone-svc" data-tw data-tw-after={`z${i}p${z.body.length - 1}`}>{z.service}</p>
             </div>
             <div class="zone-media">
               {zoneMedia[z.id]?.plates && (

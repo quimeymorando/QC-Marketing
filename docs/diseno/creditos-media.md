@@ -60,3 +60,11 @@ Procesado: se recortaron las etiquetas de profundidad; se quitaron las líneas d
 Cita: Amante, C. y B. W. Eakins (2009). *ETOPO1 1 Arc-Minute Global Relief Model: Procedures, Data Sources and Analysis*. NOAA Technical Memorandum NESDIS NGDC-24. doi:10.7289/V5C8276M.
 
 Procesado: grilla de 1 minuto de arco suavizada una vez y submuestreada a 2 minutos (241×301); marching squares propio en numpy; Douglas–Peucker con tolerancia 0,0008; se descartaron las líneas de longitud menor a 0,012. Coordenadas normalizadas 0..1: `x` de oeste (`lon0`) a este (`lon1`), `y` de norte (`lat1`) a sur (`lat0`). Cada línea es `[x,y,x,y,…]`. El campo `aspect` (0,6624) es la relación ancho/alto real a la latitud media, para dibujar el mapa sin deformarlo. No sirve para navegación. La profundidad máxima es la de ETOPO1; la Fosa Meteor suele citarse con unos 8.200–8.270 m según la fuente.
+
+## Sonido (`public/audio/`)
+
+| Archivo | Qué es | Autor / fuente | URL de origen | Licencia | Crédito a mostrar |
+|---|---|---|---|---|---|
+| `ballena-1.mp3`, `ballena-2.mp3` | Canto real de ballena jorobada (Alaska). Dos fragmentos de ~12 s recortados, normalizados y convertidos a MP3 | NOAA PMEL Acoustics Program | https://www.pmel.noaa.gov/acoustics/whales/sounds/whalewav/akhumphi1x.wav (índice: https://www.pmel.noaa.gov/acoustics/sounds_whales.html) | Obra del Gobierno de EE. UU. (dominio público); PMEL indica que su material multimedia puede distribuirse libremente y pide que se lo cite | NOAA PMEL Acoustics Program |
+
+El ambiente submarino y el ping de sonar se generan por código (Web Audio), sin archivos.

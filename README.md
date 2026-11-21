@@ -36,3 +36,8 @@ npm run deploy
 - Versión en inglés, sonido, formulario conectado a GHL y botón de WhatsApp con el número real.
 - Portfolio real (hoy son casos de ejemplo) y diseño de las páginas internas.
 - Nombres y precios de los pases.
+
+## Publicación actual
+- Dirección de prueba: https://ceto-studio.cetostudio.workers.dev/
+- Worker `ceto-studio` en la cuenta de Cloudflare (subdominio `cetostudio.workers.dev`), solo assets estáticos.
+- Si no hay sesión de Wrangler, se puede publicar por la API: `tools/cf-manifest.py` genera el manifiesto, se abre una sesión de carga, `tools/cf-upload.py` sube los archivos y se actualiza el Worker con el token de cierre.

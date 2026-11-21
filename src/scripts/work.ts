@@ -6,7 +6,7 @@ export function initWork() {
   const stage = document.querySelector<HTMLElement>('.wk-stage'); if (!stage) return;
   const cards = gsap.utils.toArray<HTMLElement>('.wk-card'), n = cards.length;
   const mm = gsap.matchMedia();
-  mm.add('(min-width: 901px) and (prefers-reduced-motion: no-preference)', () => {
+  mm.add('(prefers-reduced-motion: no-preference)', () => {
     const ease = gsap.parseEase('power3.out'), title = stage.querySelector<HTMLElement>('.wk-title')!;
     const render = (prog: number) => {
       const p = prog * (n + 0.55), off = innerWidth * 0.5 + cards[0].offsetWidth * 0.5 + 60;

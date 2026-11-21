@@ -13,6 +13,7 @@ import { initNav } from './nav';
 import { initWork } from './work';
 import { initBathy } from './bathy';
 import { initTransitions, arrive } from './transition';
+import { initSound } from './sound';
 
 gsap.registerPlugin(ScrollTrigger);
 const root = document.documentElement;
@@ -43,7 +44,8 @@ initTransitions();
 initWork();
 ScrollTrigger.addEventListener('refresh', () => depth.measure());
 
-const whale = isHome && !reduce ? createWhale(document.getElementById('whale') as HTMLCanvasElement, water, line) : null;
+const sound = initSound(() => depth.value);
+const whale = isHome && !reduce ? createWhale(document.getElementById('whale') as HTMLCanvasElement, water, line, () => sound.song()) : null;
 let bathy: Awaited<ReturnType<typeof initBathy>> = null;
 initBathy().then((b) => (bathy = b));
 
@@ -55,7 +57,7 @@ if (water) {
     if (lp) { const d = Math.hypot(x - lp[0], y - lp[1]), n = Math.min(6, Math.ceil(d / 14)); for (let i = 1; i <= n; i++) water!.drop(lp[0] + ((x - lp[0]) * i) / n, lp[1] + ((y - lp[1]) * i) / n, 0.02, 0.0085); }
     lp = [x, y];
   }, { passive: true });
-  addEventListener('pointerdown', (e) => water!.drop(e.clientX, e.clientY, 0.05, 0.035), { passive: true });
+  addEventListener('pointerdown', (e) => { if (!whale?.poke(e.clientX, e.clientY)) water!.drop(e.clientX, e.clientY, 0.05, 0.035); }, { passive: true });
   addEventListener('pointerup', (e) => { if (e.pointerType !== 'mouse') lp = null; }, { passive: true });
   document.addEventListener('pointerleave', () => (lp = null));
 }
@@ -81,7 +83,10 @@ const live = () => {
 live(); setInterval(live, 15000);
 
 // --- contacto: todavía sin destino (se conecta en la segunda vuelta) ---
-document.querySelectorAll<HTMLAnchorElement>('[data-contact]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); if (water) { const r = a.getBoundingClientRect(); water.drop(r.left + r.width / 2, r.top + r.height / 2, 0.12, 0.06); } }));
+document.querySelectorAll<HTMLAnchorElement>('[data-contact]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); sound.ping(0.34); if (water) { const r = a.getBoundingClientRect(); water.drop(r.left + r.width / 2, r.top + r.height / 2, 0.12, 0.06); } }));
+// señal de sonar: mientras el cierre está en pantalla, el botón emite un pulso que enciende el plancton a su paso
+const sonarBtn = document.querySelector<HTMLElement>('[data-contact="whatsapp"]'); let sonarOn = false, nextPing = 0;
+if (sonarBtn) new IntersectionObserver(([e]) => (sonarOn = e.isIntersecting), { threshold: 0.6 }).observe(sonarBtn);
 
 // --- bucle ---
 let started = false, introOn = false, nextAmb = 0;
@@ -93,7 +98,8 @@ gsap.ticker.add(() => {
     const s = water.state; s.scroll = scroll; s.surf = line ? line.surfPage() : -1000; s.bio = depth.bio();
     if (started && now > nextAmb && now - lastMove > 1400 && !document.hidden) { water.drop(innerWidth * Math.random(), innerHeight * (0.15 + Math.random() * 0.7), 0.03, 0.014); nextAmb = now + 1600 + Math.random() * 2200; }
   }
-  whale?.frame(now, scroll, started && !introOn);
+  if (water && sonarOn && started && now > nextPing && !document.hidden) { const r = sonarBtn!.getBoundingClientRect(); water.drop(r.left + r.width / 2, r.top + r.height / 2, 0.05, 0.11); sound.ping(0.1); nextPing = now + 3400; }
+  whale?.frame(now, scroll, started && !introOn, lp && now - lastMove < 2500 ? lp : null);
   if (!document.hidden) water?.frame(now);
   bathy?.draw(now);
 });
