@@ -131,6 +131,7 @@ gsap.ticker.add(() => {
   line?.frame(now);
   if (water) {
     const s = water.state; s.scroll = scroll; s.surf = line ? line.surfPage() : -1000; s.bio = depth.bio();
+    if (line && scroll < innerHeight * 1.3) { const pr = line.profile(); water.setSurface(pr.h, pr.n, pr.step); }
     if (started && now > nextAmb && now - lastMove > 1400 && !document.hidden) { water.drop(innerWidth * Math.random(), innerHeight * (0.15 + Math.random() * 0.7), 0.03, 0.014); nextAmb = now + 1600 + Math.random() * 2200; }
   }
   if (water && sonarOn && started && now > nextPing && !document.hidden) { const r = sonarBtn!.getBoundingClientRect(); water.drop(r.left + r.width / 2, r.top + r.height / 2, 0.05, 0.11); sound.ping(0.1); nextPing = now + 3400; }
@@ -151,8 +152,10 @@ addEventListener('resize', () => { clearTimeout(rz); rz = window.setTimeout(() =
     else {
       introOn = true; history.scrollRestoration = 'manual'; window.scrollTo(0, 0); lenis?.stop();
       root.classList.add('sea-low');
-      const rise = () => { root.classList.remove('sea-low'); if (line) gsap.to(line, { level: 1, duration: 1.35, ease: 'power2.inOut', onComplete: () => depth.measure() }); started = true; startType(); };
-      if (water) await playIntro(water, line, rise, { ask: soundPref === null ? askSound : undefined, drip: () => sound.drip(), swell: (d) => sound.swell(d) }); else { if (line) line.level = 1; await introFallback(); rise(); }
+      const seaUp = () => { root.classList.remove('sea-low'); if (line) gsap.to(line, { level: 1, duration: 1.35, ease: 'power2.inOut', onComplete: () => depth.measure() }); };
+      const typeOn = () => { water?.still(); started = true; startType(); };   // el título se escribe sobre agua en calma
+      if (water) await playIntro(water, line, typeOn, { ask: soundPref === null ? askSound : undefined, drip: () => sound.drip(), swell: (d) => sound.swell(d), onSea: seaUp });
+      else { if (line) line.level = 1; await introFallback(); seaUp(); typeOn(); }
       lenis?.start(); introOn = false;
     }
   } else await arrive();

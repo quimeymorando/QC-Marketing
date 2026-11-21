@@ -1,6 +1,6 @@
 // Línea de agua del hero: una superficie viva (resortes 1D) que responde al cursor, a la gota y a la ballena.
 // El nivel del mar es variable: durante la intro está bajo; después sube hasta quedar justo entre las dos líneas del título.
-export type Waterline = { splash(x: number, power: number): void; yAt(x: number): number; surfPage(): number; frame(t: number): void; resize(): void; level: number };
+export type Waterline = { profile(): { h: Float32Array; n: number; step: number }; splash(x: number, power: number): void; yAt(x: number): number; surfPage(): number; frame(t: number): void; resize(): void; level: number };
 
 export function createWaterline(canvas: HTMLCanvasElement | null, hero: HTMLElement | null): Waterline | null {
   if (!canvas || !hero) return null;
@@ -9,7 +9,7 @@ export function createWaterline(canvas: HTMLCanvasElement | null, hero: HTMLElem
   let w = 1, hpx = 200, dpr = 1, n = 2, h = new Float32Array(2), v = new Float32Array(2), visible = true, time = 0, high = 300, low = 500;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const mark = hero.querySelector<HTMLElement>('.hero-l2');
-  const api: Waterline = { splash, yAt, surfPage, frame, resize, level: 1 };
+  const api: Waterline = { profile: () => ({ h, n, step: STEP }), splash, yAt, surfPage, frame, resize, level: 1 };
   const base = () => low + (high - low) * api.level;
 
   function resize() {

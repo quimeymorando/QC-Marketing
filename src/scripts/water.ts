@@ -15,6 +15,10 @@ export type Water = {
   drop(x: number, y: number, r?: number, k?: number): void;
   /** Camino reciente de la cola: n puntos (x, y en pantalla, edad 0..1, distancia) y el largo de la ballena. */
   setWake(data: Float32Array, n: number, len: number, strength?: number): void;
+  /** Perfil de la línea de agua del hero (alturas por columna), para que el título cambie de color justo en la superficie. */
+  setSurface(h: Float32Array, n: number, step: number): void;
+  /** Deja el agua en calma (borra las ondas). */
+  still(): void;
   textDirty(ms?: number): void;
   drawName(): { fs: number; top: number };
   frame(t: number): void;
@@ -44,7 +48,7 @@ void main(){
 const DROP = HEAD + `uniform sampler2D s; uniform vec2 at; uniform float r, k, asp;
 void main(){ vec4 c = texture(s,uv); vec2 d = uv-at; d.x *= asp; float f = max(0.,1.-length(d)/r); f = .5-cos(f*3.14159)*.5; c.r += f*k; o = c; }`;
 
-const SHOW = HEAD + `uniform sampler2D s, tx, nm;
+const SHOW = HEAD + `uniform sampler2D s, tx, nm, sf; uniform vec4 sfp;
 uniform vec2 px; uniform vec4 vp; uniform vec4 hero; uniform vec4 intro; uniform vec4 intro2; uniform vec2 intro3;
 uniform vec4 wk[24]; uniform vec4 wkp; uniform vec4 wkb;
 float hash(vec2 p){ p = fract(p*vec2(123.34,456.21)); p += dot(p,p+45.32); return fract(p.x*p.y); }
@@ -93,10 +97,12 @@ void main(){
     float heroH = hero.x;
     if(pageY < heroH){
       vec2 tuv = vec2(uv.x, 1.-pageY/heroH) + g0*vec2(1.5, 1.5*vh/heroH);
-      // lo que está bajo la superficie se mece apenas, como visto a través del agua
-      float under = smoothstep(hero.y, hero.y+40., pageY);
-      tuv += under*vec2(sin(pageY*.045+t*1.3), cos(uv.x*vw*.021+t*1.05))*vec2(.0011, .0016*vh/heroH);
-      col = texture(tx, tuv);
+      // El título es un solo objeto a medio hundir: cada punto es tinta si queda sobre la superficie real del agua
+      // (la misma curva que dibuja la línea de mar, con sus olas y salpicaduras) y espuma si queda debajo.
+      // Así ninguna parte de una letra desaparece cuando pasa una ola.
+      float ta = texture(tx, tuv).a, sx = uv.x*vw;
+      float sy = hero.y + (sfp.z > .5 ? texture(sf, vec2((sx/sfp.y + .5)/sfp.x, .5)).r : 0.) + sin(sx/170. + t*1.1)*7. + sin(sx/61. - t*1.7)*3.2 + sin(sx/23. + t*2.6)*1.1;
+      col = vec4(mix(vec3(.016,.027,.043), vec3(.949,.965,.969), smoothstep(-1.1, 1.1, pageY - sy))*ta, ta);
     }
     float above = 1.-smoothstep(hero.y-24., hero.y+24., pageY);
     col = over(col, cyan, (clamp(gl*9.,0.,.34) + sp*.3)*above);
@@ -173,7 +179,7 @@ void main(){
 
 export function createWater(canvas: HTMLCanvasElement): Water {
   const state: WaterState = { scroll: 0, heroH: 0, surf: 0, bio: 0, intro: 0, level: 0, sea: 0, impactT: -1, dropY: 2, dropOn: 0, dropStretch: 1, dissolve: 0, tintA: 1, nameA: 1 };
-  const dead: Water = { ok: false, state, drop() {}, setWake() {}, textDirty() {}, drawName() { return { fs: 0, top: 0 }; }, frame() {}, resize() {} };
+  const dead: Water = { ok: false, state, drop() {}, setWake() {}, setSurface() {}, still() {}, textDirty() {}, drawName() { return { fs: 0, top: 0 }; }, frame() {}, resize() {} };
   const coarse = matchMedia('(pointer: coarse)').matches;
   const gl = canvas.getContext('webgl2', { premultipliedAlpha: true, alpha: true, antialias: false, powerPreference: coarse ? 'low-power' : 'high-performance' });
   if (!gl || !gl.getExtension('EXT_color_buffer_float')) return dead;
@@ -198,7 +204,7 @@ export function createWater(canvas: HTMLCanvasElement): Water {
 
   let W = 1, H = 1, SW = 1, SH = 1, vw = 1, vh = 1, dpr = 1, maxDpr = coarse ? 1.5 : 2;
   let tex: WebGLTexture[] = [], fbo: WebGLFramebuffer[] = [], cur = 0;
-  const ttex = gl.createTexture()!, ntex = gl.createTexture()!;
+  const ttex = gl.createTexture()!, ntex = gl.createTexture()!, sftex = gl.createTexture()!; let sfN = 0, sfStep = 7;
   const tcv = document.createElement('canvas'), ncv = document.createElement('canvas');
   const tcx = tcv.getContext('2d')!, ncx = ncv.getContext('2d')!;
   const hero = document.querySelector<HTMLElement>('.hero');
@@ -313,6 +319,7 @@ export function createWater(canvas: HTMLCanvasElement): Water {
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tex[cur]); gl.uniform1i(show.u('s'), 0);
     gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, ttex); gl.uniform1i(show.u('tx'), 1);
     gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, ntex); gl.uniform1i(show.u('nm'), 2);
+    gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, sftex); gl.uniform1i(show.u('sf'), 3); gl.uniform4f(show.u('sfp'), Math.max(1, sfN), sfStep, sfN > 1 ? 1 : 0, 0);
     gl.uniform2f(show.u('px'), 1 / SW, 1 / SH);
     gl.uniform4f(show.u('vp'), vw, vh, state.scroll, t / 1000);
     gl.uniform4f(show.u('hero'), state.heroH, state.surf, state.bio, 0);
@@ -325,12 +332,20 @@ export function createWater(canvas: HTMLCanvasElement): Water {
 
   canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); alive = false; document.documentElement.classList.remove('gl-on'); });
   // texturas vacías hasta que haya texto
+  gl.bindTexture(gl.TEXTURE_2D, sftex); gl.texImage2D(gl.TEXTURE_2D, 0, gl.R16F, 1, 1, 0, gl.RED, gl.FLOAT, new Float32Array([0])); params(sftex);
   tcv.width = tcv.height = 2; upload(ttex, tcv); ncv.width = ncv.height = 2; upload(ntex, ncv);
   resize();
   document.documentElement.classList.add('gl-on');
 
   return {
     ok: true, state, drop: addDrop, drawName, frame, resize,
+    setSurface(h, n, step) {
+      if (!alive) return;
+      gl.bindTexture(gl.TEXTURE_2D, sftex); gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.R16F, n, 1, 0, gl.RED, gl.FLOAT, h.subarray(0, n)); gl.pixelStorei(gl.UNPACK_ALIGNMENT, 4);
+      if (sfN !== n) params(sftex); sfN = n; sfStep = step;
+    },
+    still() { if (!alive) return; for (const f of fbo) { gl.bindFramebuffer(gl.FRAMEBUFFER, f); gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT); } gl.bindFramebuffer(gl.FRAMEBUFFER, null); },
     setWake(data, n, len, strength = 1) {
       wkN = Math.min(24, n); wkLen = len; wkS = strength; if (wkN < 2) { wkN = 0; return; }
       wkData.set(data.subarray(0, wkN * 4));

@@ -68,3 +68,17 @@ Procesado: grilla de 1 minuto de arco suavizada una vez y submuestreada a 2 minu
 | `ballena-1.mp3`, `ballena-2.mp3` | Canto real de ballena jorobada (Alaska). Dos fragmentos de ~12 s recortados, normalizados y convertidos a MP3 | NOAA PMEL Acoustics Program | https://www.pmel.noaa.gov/acoustics/whales/sounds/whalewav/akhumphi1x.wav (índice: https://www.pmel.noaa.gov/acoustics/sounds_whales.html) | Obra del Gobierno de EE. UU. (dominio público); PMEL indica que su material multimedia puede distribuirse libremente y pide que se lo cite | NOAA PMEL Acoustics Program |
 
 El ambiente submarino y el ping de sonar se generan por código (Web Audio), sin archivos.
+
+## Grabados de Gessner (`plate-7.png`, `plate-8.png`, `plate-9.png`)
+
+Xilografías de Conrad Gessner, *Historiae animalium*, liber IV: *De piscium & aquatilium animantium natura* (1.ª ed. Zúrich, 1558). Ejemplar digitalizado: edición de Fráncfort, A. Cambier, 1604, Smithsonian Libraries, vía Biodiversity Heritage Library / Internet Archive (marcado como dominio público). Las figuras siguen las de la *Carta Marina* de Olaus Magnus (1539), como dice el propio texto de la página.
+
+| Archivo | Qué es | Página | URL |
+|---|---|---|---|
+| `plate-7.png` (1240×497) | *Balaena erecta grandem navem submergens*: una ballena se alza y hunde una nave. Zona crepuscular | p. 118 | https://archive.org/details/ConradiGesnerimIVGess/page/n163/mode/1up |
+| `plate-8.png` (1240×600) | *Nautae in dorsa cetorum, quae insulas putant*: marineros anclan sobre una ballena creyéndola una isla. Sección «Lo que ya te pasó» | p. 119 | https://archive.org/details/ConradiGesnerimIVGess/page/n164/mode/1up |
+| `plate-9.png` (1240×561) | *Balaena cum adiuncta orca eam persequente*: ballena perseguida por una orca. En reserva | p. 118 | https://archive.org/details/ConradiGesnerimIVGess/page/n163/mode/1up |
+
+Procesado: recorte de la figura, corrección del fondo del papel (manchas), reducción a 1240 px de ancho y umbral a 1 bit (blanco opaco = tinta, fondo transparente).
+
+Por qué estos grabados: *cetus* (del griego *kētos*) es «monstruo marino, ballena»; de ahí vienen «cetáceo» y el nombre del estudio. El video del sifonóforo (`clip-1`) ya no se usa en la home.

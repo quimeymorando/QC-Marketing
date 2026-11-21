@@ -11,8 +11,8 @@ const mdir = path.join(process.cwd(), 'public', 'media');
 const media = (f: string) => fs.existsSync(path.join(mdir, f));
 const plates: any[] = media('plates.json') ? JSON.parse(fs.readFileSync(path.join(mdir, 'plates.json'), 'utf8')) : [];
 const plate = (n: number) => plates.find((p) => p.file === `plate-${n}.png`);
-const cap = (p: any) => `${p.nombreComun ? p.nombreComun[0].toUpperCase() + p.nombreComun.slice(1) + ' · ' : ''}${p.autor.split(' (')[0].replace('Albert C. L. G. ', 'A. ').replace('Ernst ', 'E. ')}, ${p.anio} · ${p.expedicion ? 'HMS Challenger' : 'Kunstformen der Natur'}, ${p.lamina.split(',')[0].split(' (')[0].replace('Pl.', 'lám.').replace('Tafel', 'lám.')}`;
-const zoneMedia: Record<string, { plates?: number[]; clip?: string }> = { superficie: { plates: [2] }, luz: { plates: [6, 5] }, crepuscular: { clip: 'clip-1' }, abismo: { plates: [1] } };
+const cap = (p: any) => p.pie ? p.pie : `${p.nombreComun ? p.nombreComun[0].toUpperCase() + p.nombreComun.slice(1) + ' · ' : ''}${p.autor.split(' (')[0].replace('Albert C. L. G. ', 'A. ').replace('Ernst ', 'E. ')}, ${p.anio} · ${p.expedicion ? 'HMS Challenger' : 'Kunstformen der Natur'}, ${p.lamina.split(',')[0].split(' (')[0].replace('Pl.', 'lám.').replace('Tafel', 'lám.')}`;
+const zoneMedia: Record<string, { plates?: number[]; clip?: string }> = { superficie: { plates: [2] }, luz: { plates: [6, 5] }, crepuscular: { plates: [7] }, abismo: { plates: [1] } };
 ---
 <Base page="home" depth={0}>
   <main>
@@ -74,13 +74,13 @@ const zoneMedia: Record<string, { plates?: number[]; clip?: string }> = { superf
             </div>
             <div class="zone-media">
               {zoneMedia[z.id]?.plates && (
-                <div class={`plates ${zoneMedia[z.id].plates!.length === 1 ? 'one' : ''}`}>
+                <div class={`plates ${zoneMedia[z.id].plates!.length === 1 ? 'one' : ''} ${z.id === 'crepuscular' ? 'wide' : ''}`}>
                   {zoneMedia[z.id].plates!.map(plate).filter(Boolean).map((p: any) => (
                     <figure class="plate">
                       <div class="plate-box" style={`width:${p.width}px;aspect-ratio:${p.width}/${p.height};--src:url(/media/${p.file})`}>
                         <div class="plate-img"></div><div class="plate-img lit"></div>
                       </div>
-                      <figcaption><i>{p.nombre}</i>{cap(p)}</figcaption>
+                      <figcaption><span><i>{p.nombre}</i>{cap(p)}</span>{z.id === 'crepuscular' && <span class="plate-note">Cetus, en latín: monstruo marino, ballena. De ahí viene «cetáceo». Y también nuestro nombre.</span>}</figcaption>
                     </figure>
                   ))}
                 </div>
@@ -107,6 +107,16 @@ const zoneMedia: Record<string, { plates?: number[]; clip?: string }> = { superf
           </div>
           <p class="rows-intro" data-tw data-tw-after="rows">Si ya trabajaste con una agencia, es probable que alguna de estas te suene. Así lo hacemos nosotros.</p>
         </div>
+        {plate(8) && (
+          <div class="plates one wide rows-plate">
+            <figure class="plate">
+              <div class="plate-box" style={`width:${plate(8).width}px;aspect-ratio:${plate(8).width}/${plate(8).height};--src:url(/media/${plate(8).file})`}>
+                <div class="plate-img"></div><div class="plate-img lit"></div>
+              </div>
+              <figcaption><span><i>{plate(8).nombre}</i>{cap(plate(8))}</span><span class="plate-note">Creyeron que era tierra firme. Era una ballena.</span></figcaption>
+            </figure>
+          </div>
+        )}
         <ol>
           {objections.map((o, i) => (
             <li class="row">
@@ -240,7 +250,7 @@ const zoneMedia: Record<string, { plates?: number[]; clip?: string }> = { superf
         </div>
       </div>
       <div class="foot-word display" data-tw data-tw-step="95" data-tw-caret="stay">Ceto Studio</div>
-      <p class="foot-credits">Láminas: E. Haeckel y A. Günther, HMS Challenger (1887–1888) y Kunstformen der Natur (1904), dominio público. Video y ecograma: NOAA Ocean Exploration. Batimetría: NOAA NCEI, ETOPO1. Tipografías: Sprat y Ronzino (Collletttivo), Martian Mono (Evil Martians).</p>
+      <p class="foot-credits">Láminas: E. Haeckel y A. Günther, HMS Challenger (1887–1888) y Kunstformen der Natur (1904), dominio público. Grabados: C. Gessner, Historiae animalium (1558), dominio público, vía Smithsonian Libraries. Ecograma: NOAA Ocean Exploration. Batimetría: NOAA NCEI, ETOPO1. Tipografías: Sprat y Ronzino (Collletttivo), Martian Mono (Evil Martians).</p>
       <div class="foot-base">
         <span>© <span data-year>2026</span> Ceto Studio · Quimi &amp; Cori</span>
         <span>Tu hora <span data-live="time">--:--</span></span>
