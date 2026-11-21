@@ -1,15 +1,17 @@
-# Logo: punto de partida
+# Logo de Ceto Studio
 
 Boceto original de Cori: [boceto-logo-original.jpg](boceto-logo-original.jpg).
-- **Qué tiene:** dos colas de ballena invertidas (una hacia arriba, otra hacia abajo) en simetría de rotación, dentro de dos óvalos abiertos que se superponen.
-- **Pedido:** quitar los círculos y dejar solo las dos colas.
-- **Lectura del concepto:** una ballena que se sumerge y otra que sube. Superficie y profundidad, y también dos personas (Quimi y Cori) en un solo signo.
-- **A tener en cuenta:** la cola de ballena suelta es un ícono muy usado. Lo que lo hace propio es el par invertido y en rotación.
 
-**Variantes a explorar (con Fable):**
-1. Las dos colas solas, tal cual el boceto.
-2. Las dos colas con una línea de agua horizontal entre ellas: una arriba de la superficie y otra abajo.
-3. Ajustes de proporción y grosor para que funcione chico (favicon de 16–32 px) y grande.
-4. Versión en trazo y versión rellena. Colores: azul petróleo sobre blanco espuma y espuma sobre casi negro.
+## Versión final (21/11/2026)
+El símbolo está **calcado del boceto**: se vectorizó la imagen original y se quitaron solo los dos óvalos de afuera. Quedan las dos colas de ballena entrelazadas, una hacia arriba y otra hacia abajo, que comparten la curva del medio.
 
-La ballena dibujada de la web sale de este logo.
+Archivos en [logo/](logo/):
+- `ceto-simbolo.svg` / `ceto-simbolo-claro.svg`: símbolo en línea (versión principal, como el boceto).
+- `ceto-simbolo-relleno.svg` / `-claro.svg`: símbolo relleno.
+- `ceto-logo-horizontal.svg` / `-claro.svg`: símbolo + "Ceto Studio" en Sprat (texto convertido a trazos).
+- `ceto-favicon.svg`: ícono para la pestaña del navegador y perfil.
+- `hoja-de-logo.png`: hoja con todas las versiones.
+- `ceto-trazados.json`: los trazados, para usar en la web.
+- `trace.py`, `fit.py`, `gen3.py`: cómo se generó (calco del boceto → curvas → archivos).
+
+Colores: azul petróleo `#0E3448` sobre espuma `#F2F6F7`; espuma sobre casi negro `#04070B`; bioluminiscencia `#5CFFC4` solo en el abismo.
