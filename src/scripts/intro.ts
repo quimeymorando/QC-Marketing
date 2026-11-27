@@ -4,6 +4,8 @@ import gsap from 'gsap';
 import type { Water } from './water';
 import type { Waterline } from './waterline';
 
+const SPEED = 2.6;
+
 type Opts = { drip?: () => void; swell?: (s: number) => void; onSea?: () => void };
 
 export function playIntro(water: Water, line: Waterline | null, onHero: () => void, opts: Opts = {}): Promise<void> {
@@ -41,8 +43,10 @@ export function playIntro(water: Water, line: Waterline | null, onHero: () => vo
     tl.add(() => { document.documentElement.classList.remove('intro'); opts.onSea?.(); }, OUT + 1.0);
     if (logo) tl.to(logo, { opacity: 0, duration: 0.3, ease: 'none' }, OUT + 1.2);
     tl.to({}, { duration: 0.02 }, OUT + 1.5);
+    // la intro completa dura ~6 s y el título (el LCP de la home) no se pinta hasta que termina: se reproduce a 2,6x (~2,3 s)
+    tl.timeScale(SPEED);
     if (location.search.includes('intro=pausa')) tl.pause();   // para revisar la intro cuadro por cuadro
-    const skip = () => tl.timeScale(4);
+    const skip = () => tl.timeScale(SPEED * 2);
     const evs = ['pointerdown', 'wheel', 'keydown', 'touchstart'] as const;
     evs.forEach((e) => addEventListener(e, skip, { passive: true }));
     const off = () => evs.forEach((e) => removeEventListener(e, skip));
