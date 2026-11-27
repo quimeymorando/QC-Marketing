@@ -10,9 +10,10 @@ import path from 'node:path';
 const mdir = path.join(process.cwd(), 'public', 'media');
 const media = (f: string) => fs.existsSync(path.join(mdir, f));
 const plates: any[] = media('plates.json') ? JSON.parse(fs.readFileSync(path.join(mdir, 'plates.json'), 'utf8')) : [];
-const plate = (n: number) => plates.find((p) => p.file === `plate-${n}.png`);
+const plate = (n: number | string) => plates.find((p) => p.file === (typeof n === 'number' ? `plate-${n}.png` : n));
 const cap = (p: any) => p.pie ? p.pie : `${p.nombreComun ? p.nombreComun[0].toUpperCase() + p.nombreComun.slice(1) + ' · ' : ''}${p.autor.split(' (')[0].replace('Albert C. L. G. ', 'A. ').replace('Ernst ', 'E. ')}, ${p.anio} · ${p.expedicion ? 'HMS Challenger' : 'Kunstformen der Natur'}, ${p.lamina.split(',')[0].split(' (')[0].replace('Pl.', 'lám.').replace('Tafel', 'lám.')}`;
-const zoneMedia: Record<string, { plates?: number[]; clip?: string }> = { superficie: { plates: [2] }, luz: { plates: [6, 5] }, crepuscular: { plates: [7] }, abismo: { plates: [1] } };
+// Cada zona muestra un grabado antiguo del "antepasado" de su servicio: cartel (anuncios), imprenta (webs), telar de tarjetas (automatizaciones), autómata (IA).
+const zoneMedia: Record<string, { plates?: (number | string)[]; clip?: string }> = { superficie: { plates: ['servicio-anuncios.png'] }, luz: { plates: ['servicio-webs.png'] }, crepuscular: { plates: ['servicio-automatizaciones.png'] }, abismo: { plates: ['servicio-ia.png'] } };
 ---
 <Base page="home" depth={0}>
   <main>
@@ -66,13 +67,18 @@ const zoneMedia: Record<string, { plates?: number[]; clip?: string }> = { superf
             </div>
             <div class="zone-media">
               {zoneMedia[z.id]?.plates && (
-                <div class={`plates ${zoneMedia[z.id].plates!.length === 1 ? 'one' : ''} ${z.id === 'crepuscular' ? 'wide' : ''}`}>
+                <div class={`plates ${zoneMedia[z.id].plates!.length === 1 ? 'one' : ''}`}>
                   {zoneMedia[z.id].plates!.map(plate).filter(Boolean).map((p: any) => (
                     <figure class="plate">
-                      <div class="plate-box" style={`width:${p.width}px;aspect-ratio:${p.width}/${p.height};--src:url(/media/${p.file})`}>
+                      <div class={`plate-box ${p.capas ? 'pega' : ''}`} style={`width:${p.width}px;aspect-ratio:${p.width}/${p.height};--src:url(/media/${p.file})`}>
                         <div class="plate-img"></div><div class="plate-img lit"></div>
+                        {p.capas && (
+                          <div class="pega-hoja" aria-hidden="true" style={`--src:url(/media/${p.capas.cartel});--papel:url(/media/${p.capas.papel})`}>
+                            <div class="pega-papel"></div><div class="plate-img"></div><div class="plate-img lit"></div>
+                          </div>
+                        )}
                       </div>
-                      <figcaption><span><i>{p.nombre}</i>{cap(p)}</span>{z.id === 'crepuscular' && <span class="plate-note">Cetus, en latín: monstruo marino, ballena. De ahí viene «cetáceo». Y también nuestro nombre.</span>}</figcaption>
+                      <figcaption><span><i>{p.nombre}</i>{cap(p)}</span></figcaption>
                     </figure>
                   ))}
                 </div>

@@ -91,6 +91,12 @@ if (plates.length) addEventListener('pointermove', (e) => {
   for (const p of plates) { const r = p.getBoundingClientRect(); if (r.bottom < -200 || r.top > innerHeight + 200) continue; p.style.setProperty('--mx', e.clientX - r.left + 'px'); p.style.setProperty('--my', e.clientY - r.top + 'px'); }
 }, { passive: true });
 
+// --- láminas: se dibujan al entrar en pantalla ---
+if (plates.length && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  const lio = new IntersectionObserver((es) => es.forEach((e) => { if (!e.isIntersecting) return; e.target.classList.add('in'); lio.unobserve(e.target); }), { rootMargin: '0px 0px -15% 0px' });
+  plates.forEach((p) => { p.classList.add('pre'); lio.observe(p); });
+} else plates.forEach((p) => p.classList.add('in'));
+
 // --- videos: solo se reproducen en pantalla ---
 const vio = new IntersectionObserver((es) => es.forEach((e) => { const v = e.target as HTMLVideoElement; e.isIntersecting ? v.play().catch(() => {}) : v.pause(); }), { rootMargin: '10%' });
 document.querySelectorAll('video[data-auto]').forEach((v) => vio.observe(v));
