@@ -30,7 +30,12 @@ const {
         try { arriving = sessionStorage.getItem('ceto-nav') === '1'; sessionStorage.removeItem('ceto-nav'); } catch (e) {}
         if (rm) d.classList.add('rm');
         if (arriving && !rm) d.classList.add('arriving');
-        if (d.dataset.page === 'home' && !arriving && !rm) d.classList.add('intro');
+        if (d.dataset.page === 'home' && !arriving && !rm) {
+          // cada carga completa de la home muestra la intro, también al recargar con un ancla (#manifiesto, #contacto):
+          // se saca el ancla para que la intro arranque desde arriba
+          if (location.hash) try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+          d.classList.add('intro');
+        }
       })();
     </script>
   </head>
