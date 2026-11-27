@@ -82,3 +82,18 @@ Xilografías de Conrad Gessner, *Historiae animalium*, liber IV: *De piscium & a
 Procesado: recorte de la figura, corrección del fondo del papel (manchas), reducción a 1240 px de ancho y umbral a 1 bit (blanco opaco = tinta, fondo transparente).
 
 Por qué estos grabados: *cetus* (del griego *kētos*) es «monstruo marino, ballena»; de ahí vienen «cetáceo» y el nombre del estudio. El video del sifonóforo (`clip-1`) ya no se usa en la home.
+
+## Grabados de servicios (`servicio-*.png`, metadatos en `plates.json`)
+
+Desde 2026-11-27 cada zona muestra un grabado antiguo del "antepasado" de su servicio, en lugar de animales marinos. Mismo tratamiento que las láminas: escala de grises, invertido, dither Atkinson a 1 bit, tinta blanca sobre transparente. Las imágenes se bajaron de Wikimedia Commons y se procesaron el 2026-11-27.
+
+| Archivo | Zona / servicio | Qué es | Autor / obra | URL de origen | Licencia |
+|---|---|---|---|---|---|
+| `servicio-anuncios.png` + `-cartel.png` + `-papel.png` (700×786) | Superficie · Anuncios en Meta | *L'Afficheur*, el pegador de carteles | E. Bouchardon (dib.), grab. conde de Caylus / F. Joullain, *Études prises dans le bas peuple ou les Cris de Paris*, 1742 | https://commons.wikimedia.org/wiki/File:%C3%89tudes_prises_dans_le_bas_peuple_ou_les_Cris_de_Paris_-_L%E2%80%99Afficheur.jpg | Dominio público. Ejemplar del Metropolitan Museum of Art (Open Access) |
+| `servicio-webs.png` (600×702) | Zona de luz · Webs y apps | *Der Buchdrucker*, taller de imprenta | Jost Amman, *Ständebuch*, 1568 | https://commons.wikimedia.org/wiki/File:Buchdrucker-1568.png | Dominio público |
+| `servicio-automatizaciones.png` (547×505) | Zona crepuscular · Automatizaciones | Telar Jacquard de doble cilindro | Richard Marsden, *Cotton Weaving*, 1895 | https://commons.wikimedia.org/wiki/File:Jacquard_134-Marsden.png | Dominio público |
+| `servicio-ia.png` (700×640) | Abismo · IA aplicada | El autómata ajedrecista de Kempelen ("el Turco"), con el operador escondido a la vista | J. F. zu Racknitz, *Ueber den Schachspieler des Herrn von Kempelen*, 1789 | https://commons.wikimedia.org/wiki/File:%E2%80%9CThe_Turk.%E2%80%9D_Engraving_in_Joseph_Friedrich_Racknitz,_Ueber_den_schachspieler_des_herrn_von_Kempelen_und_dessen_nachbildung_(2919837469).jpg | Dominio público. Ejemplar de la Library Company of Philadelphia |
+
+Animación de anuncios: el grabado se separó en tres capas. `servicio-anuncios.png` es la escena sin cartel (la zona del cartel se rellenó con la trama de la pared tomada de la franja izquierda), `-papel.png` es la forma del cartel y `-cartel.png` su tinta. El texto original del cartel (portada de la 4.ª serie de los *Cris de Paris*) se borró salvo "AVIS", y se agregó "SE BUSCA gente que quiera comprar." en Sprat. En CSS el cartel se despliega de arriba abajo, queda pegado y se desvanece, en un loop de 3 s.
+
+Las láminas 1 a 6 y el grabado 7 ya no se muestran en la home; quedan en `public/media/` por si se usan en otras páginas. El grabado 8 (marineros sobre la ballena) sigue en «Lo que ya te pasó».

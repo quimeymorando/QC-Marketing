@@ -154,5 +154,61 @@
   "expedicion": null,
   "licencia": "Dominio público (siglo XVI). Digitalización: Smithsonian Libraries vía Biodiversity Heritage Library / Internet Archive, marcada como dominio público.",
   "credito": "C. Gessner, Historiae animalium, lib. IV (1558; ed. 1604). Dominio público, vía Smithsonian Libraries / Internet Archive."
+ },
+ {
+  "file": "servicio-anuncios.png",
+  "width": 700,
+  "height": 786,
+  "capas": {
+   "cartel": "servicio-anuncios-cartel.png",
+   "papel": "servicio-anuncios-papel.png"
+  },
+  "nombre": "L’Afficheur",
+  "autor": "Edme Bouchardon (dib.), grabado por el conde de Caylus y F. Joullain",
+  "anio": 1742,
+  "obra": "Études prises dans le bas peuple ou les Cris de Paris, 4.ª serie",
+  "pie": "El pegador de carteles · E. Bouchardon, Cris de Paris, 1742",
+  "url": "https://commons.wikimedia.org/wiki/File:%C3%89tudes_prises_dans_le_bas_peuple_ou_les_Cris_de_Paris_-_L%E2%80%99Afficheur.jpg",
+  "licencia": "Dominio público (1742). Ejemplar del Metropolitan Museum of Art (Open Access).",
+  "credito": "E. Bouchardon, L’Afficheur, Cris de Paris (1742). Dominio público, vía The Metropolitan Museum of Art / Wikimedia Commons. El texto del cartel es un agregado nuestro."
+ },
+ {
+  "file": "servicio-webs.png",
+  "width": 600,
+  "height": 702,
+  "nombre": "Der Buchdrucker",
+  "autor": "Jost Amman",
+  "anio": 1568,
+  "obra": "Eygentliche Beschreibung aller Stände auff Erden (Ständebuch), texto de Hans Sachs",
+  "pie": "La imprenta · J. Amman, Ständebuch, 1568",
+  "url": "https://commons.wikimedia.org/wiki/File:Buchdrucker-1568.png",
+  "licencia": "Dominio público (1568).",
+  "credito": "J. Amman, Der Buchdrucker, Ständebuch (1568). Dominio público, vía Wikimedia Commons."
+ },
+ {
+  "file": "servicio-automatizaciones.png",
+  "width": 547,
+  "height": 505,
+  "nombre": "Telar Jacquard de doble cilindro",
+  "autor": "Richard Marsden",
+  "anio": 1895,
+  "obra": "Cotton Weaving: Its Development, Principles, and Practice",
+  "pie": "Telar de tarjetas perforadas · R. Marsden, Cotton Weaving, 1895",
+  "url": "https://commons.wikimedia.org/wiki/File:Jacquard_134-Marsden.png",
+  "licencia": "Dominio público (1895).",
+  "credito": "R. Marsden, Cotton Weaving (1895), telar Jacquard. Dominio público, vía Wikimedia Commons."
+ },
+ {
+  "file": "servicio-ia.png",
+  "width": 700,
+  "height": 640,
+  "nombre": "Der Schachspieler",
+  "autor": "Joseph Friedrich zu Racknitz",
+  "anio": 1789,
+  "obra": "Ueber den Schachspieler des Herrn von Kempelen und dessen Nachbildung",
+  "pie": "El autómata ajedrecista de Kempelen, con su operador a la vista · J. F. zu Racknitz, 1789",
+  "url": "https://commons.wikimedia.org/wiki/File:%E2%80%9CThe_Turk.%E2%80%9D_Engraving_in_Joseph_Friedrich_Racknitz,_Ueber_den_schachspieler_des_herrn_von_Kempelen_und_dessen_nachbildung_(2919837469).jpg",
+  "licencia": "Dominio público (1789). Ejemplar de la Library Company of Philadelphia, sin restricciones conocidas.",
+  "credito": "J. F. zu Racknitz, Ueber den Schachspieler des Herrn von Kempelen (1789). Dominio público, vía Library Company of Philadelphia / Wikimedia Commons."
  }
 ]
